@@ -24,6 +24,6 @@ deploy:
 
 **解决方法**
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201013153839.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201013153839.png)
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201013153856.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201013153856.png)

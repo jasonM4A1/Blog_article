@@ -24,11 +24,11 @@ tags: Git
 
    托管代码的服务器，相当于把你的本地仓库`clone`到了云盘上。如`Github`、`Gitee`。你可以简单的认为是你项目组中的一台用于远程数据交换的电脑。
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008140952.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201016134339.png)
 
 我们对下面的这张图进行讲解，以加深对`Git`的理解。
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008142409.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201008142409.png)
 
 1. `Directory`：使用`Git`管理的一个仓库，其中包含了我们使用的工作空间和`Git`管理空间。
 2. `WorkSpace`：里面存放着`Git`进行版本控制的目录和文件。
@@ -45,4 +45,4 @@ tags: Git
 
 下图为各个工作区域进行更换的命令图解：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008143501.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201008143501.png)

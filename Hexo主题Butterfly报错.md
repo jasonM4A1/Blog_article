@@ -28,6 +28,4 @@ extends includes/layout.pug block content include ./includes/mixins/post-ui.pug 
 
 
 
-作者：SightVanish
-链接：https://www.jianshu.com/p/aa936a8369fb
-来源：简书
+> 原文链接：https://www.jianshu.com/p/aa936a8369fb

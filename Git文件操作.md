@@ -20,7 +20,7 @@ git init
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009124104.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201016133931.png)
 
 ## 将文件添加到版本库
 
@@ -45,7 +45,7 @@ git status <file>
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009131758.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009131758.png)
 
 ### 忽略文件
 
@@ -79,7 +79,7 @@ git add .
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009132512.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009132512.png)
 
 ### 提交文件到本地仓库(Repository)
 
@@ -101,7 +101,7 @@ git commit --amend
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009133403.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009133403.png)
 
 ### 修改文件
 
@@ -116,7 +116,7 @@ git commit --amend
 
 执行`git status`查看修改后的文件状态：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009134643.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009134643.png)
 
 使用`git status`查看文件状态，这时命令行告诉我们`one.txt`处于已被修改状态。但如果想要明确的知道文件的那些内容被修改了，就要使用`git diff <file>`。
 
@@ -129,11 +129,11 @@ git diff <file>
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009135758.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009135758.png)
 
 查看过后文件的修改内容后，我们就可以把文件添加到stage，然后再提交到repository。没错，被修改后的文件，和新文件一样，同样需要先`git add <file>`添加到stage区，然后再`git commit`提交到Repository。
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009142438.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009142438.png)
 
 ### 删除文件
 
@@ -206,9 +206,9 @@ git show [commitId] [fileName]
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009145836.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009145836.png)
 
-![image-20201009150224391](C:/Users/j2662/AppData/Roaming/Typora/typora-user-images/image-20201009150224391.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201016135435.png)
 
 ### 版本回退
 
@@ -230,5 +230,5 @@ git reset --hard <commit id> # 可以往前，可以往后
 
 图示：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201009154511.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201009154511.png)
 

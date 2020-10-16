@@ -17,33 +17,33 @@ tags: Git
 
 + `git`仓库级别对应的配置文件是当前仓库下的`.git/config`。
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008133713.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008133713.png)
 
 + `git`用户级别对应的配置文件是用户宿主目录下的`~/.gitconfig`。
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008134639.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008134639.png)
 
 + `git`系统级别对应的配置文件是`git`安装目录下的`/ect/gitconfig`。
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008134715.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008134715.png)
 
 ## 配置命令
 
 + `git config --local -l`查看仓库配置【必须要进入到具体的目录下，比如要查看Blog仓库的配置信息】
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195630.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195630.png)
 
 + `git config --global -l`查看用户配置
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195740.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195740.png)
 
 + `git config --system -l`查看系统配置
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195804.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195804.png)
 
 +  `git config -l`查看所有的配置信息，依次是系统级别、用户级别、仓库级别
 
-  ![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195507.png)
+  ![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195507.png)
   
   + `git config --global --edit`直接对配置文件进行编辑
 
@@ -83,7 +83,7 @@ git config [--local|--global|--system] section.key value
 
 在student区域下添加一个名称为sum值为32的配置项，执行结果如下：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195217.png)
+![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195217.png)
 
 ## 获取单个配置项
 
@@ -93,7 +93,7 @@ git config [--local|--global|--system] --get section.key
 
 只获取student域下面的`age = 32`这一条配置信息，操作如下：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195316.png)
+![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195316.png)
 
 如果获取一个section不存在的key值，不会返回任何值
 
@@ -107,7 +107,7 @@ git config [--local|--global|--system] --unset section.key
 
 删除前面我们添加到students域下的`age = 32`这条配置信息，操作如下：
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008195406.png)
+![](https://gitee.com/jasonm4a1/pictureHost/raw/master/20201008195406.png)
 
 ## 所有config命令参数
 

@@ -19,9 +19,9 @@ tags: Git
   + 执行`git add`文件状态变为`Staged`；
   + 执行`git checkout`则丢弃修改，文件状态返回到`Unmodify`（`git checkout`即从库中取出文件，覆盖当前修改）。
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008184145.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201008184145.png)
 
-![](https://gitee.com/CharlieLiLi/pictureHost/raw/master/20201008191521.png)
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201008191521.png)
 
 
 
