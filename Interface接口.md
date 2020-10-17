@@ -1,7 +1,13 @@
 ---
 title: Interface接口
 date: 2020-10-15 21:03:24
-tags: Java
+tags: 
+	- Java
+	- 基础知识
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017141050.jpg
 ---
 
 # Interface接口

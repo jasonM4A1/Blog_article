@@ -1,7 +1,13 @@
 ---
 title: git_config配置
 date: 2020-10-13 23:11:23
-tags: Git
+tags: 
+	- Git
+	- 基础知识
+categories:
+	- Git
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017141027.jpg
 ---
 # git config配置
 

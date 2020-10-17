@@ -1,7 +1,14 @@
 ---
 title: Hexo初次部署到github无效
 date: 2020-10-13 23:02:56
-tags: 博客
+tags: 
+	- 博客
+	- Hexo
+	- 报错
+categories:
+	- 博客
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017135643.jpg
 ---
 # Hexo初次部署到github无效
 

@@ -1,7 +1,14 @@
 ---
 title: ArrayList类
 date: 2020-10-15 13:10:10
-tags: Java
+tags: 
+	- Java 
+	- ArrayList类
+	- 常用类
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017133249.jpg
 ---
 
 # ArrayList类

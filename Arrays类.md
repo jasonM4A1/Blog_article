@@ -1,7 +1,14 @@
 ---
 title: Arrays类
 date: 2020-10-15 15:31:46
-tags: Java
+tags: 
+	- Java
+	- Arrays类
+	- 常用类
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017134821.jpg
 ---
 
 # Arrays类

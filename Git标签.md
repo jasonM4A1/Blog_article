@@ -1,7 +1,13 @@
 ---
 title: Git标签
 date: 2020-10-13 23:13:11
-tags: Git
+tags: 
+	- Git
+	- 基础知识
+categories:
+	- Git
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017141344.jpg
 ---
 # Git标签
 

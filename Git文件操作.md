@@ -1,7 +1,13 @@
 ---
 title: Git文件操作
 date: 2020-10-13 23:11:45
-tags: Git
+tags: 
+	- Git
+	- 基础知识
+categories:
+	- Git
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017141128.jpg
 ---
 # Git文件基本操作
 

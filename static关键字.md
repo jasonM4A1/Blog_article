@@ -1,10 +1,15 @@
 ---
 title: static关键字
 date: 2020-10-15 15:08:35
-tags: Java
+tags: 
+	- Java 
+	- String类
+	- 常用类
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017133432.jpg 
 ---
-
-# static关键字
 
 ## 概述
 

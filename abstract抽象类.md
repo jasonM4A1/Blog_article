@@ -1,7 +1,14 @@
 ---
 title: abstract抽象类
 date: 2020-10-15 17:21:24
-tags: Java
+tags: 
+	- Java
+	- 常用类
+	- 基础知识
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017135142.jpg
 ---
 
 # abstract抽象类

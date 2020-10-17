@@ -1,7 +1,14 @@
 ---
 title: Random类
 date: 2020-10-15 13:07:49
-tags: Java
+tags: 
+	- 常用类
+	- Random
+	- Java
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017133156.jpg
 ---
 
 # Random类

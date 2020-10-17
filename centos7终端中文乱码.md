@@ -1,7 +1,11 @@
 ---
-title: centos7终端中文乱码
+title: CentOS7终端中文乱码
 date: 2020-10-13 23:07:18
-tags: Linux
+tags: 报错解决
+categories: 
+	- Linux
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017122123.jpg
 ---
 **问题**
 

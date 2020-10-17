@@ -1,7 +1,13 @@
 ---
 title: Git基本理论
 date: 2020-10-13 23:11:09
-tags: Git
+tags: 
+	- 基础知识
+	- Git
+categories: 
+	- Git
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017120410.jpg
 ---
 
 # Git基本理论（核心）

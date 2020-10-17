@@ -1,7 +1,15 @@
 ---
 title: Hexo主题Butterfly报错
 date: 2020-10-13 21:50:00
-tags: 博客
+tags: 
+	- 博客
+	- Hexo
+	- Butterfly
+	- 报错
+categories:
+	- 博客
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017135542.jpg
 ---
 
 # Hexo主题Butterfly报错

@@ -1,7 +1,14 @@
 ---
 title: Math类
 date: 2020-10-15 16:05:35
-tags: Java
+tags: 
+	- Java
+	- 常用类
+	- 基础知识
+categories:
+	Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017134950.jpg
 ---
 
 # Math类

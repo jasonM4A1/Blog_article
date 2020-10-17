@@ -1,7 +1,14 @@
 ---
 title: String类
 date: 2020-10-15 13:24:18
-tags: Java
+tags: 
+	- Java
+	- String类
+	- 常用类
+categories:
+	- Java
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017133332.jpg
 ---
 
 # String类

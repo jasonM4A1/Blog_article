@@ -1,7 +1,13 @@
 ---
 title: Git文件状态
 date: 2020-10-13 23:11:36
-tags: Git
+tags: 
+	- Git
+	- 基础知识
+categories:
+	- Git
+cover:
+	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017135856.jpg
 ---
 # Git文件四种状态
 
