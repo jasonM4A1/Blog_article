@@ -3,7 +3,7 @@ title: Windows10与子系统文件互访
 date: 2020-10-17 11:46:17
 tags: 子系统
 categories: 
-	- 其他
+	- Linux
 cover:	
 	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201017120747.jpg
 ---
