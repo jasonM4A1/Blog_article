@@ -100,6 +100,7 @@ public class Test {
 
 + `boolean equals(Object anObject)`：将此字符串与指定的对象进行比较。
 + `boolean equalsIgnoreCase(String anotherString)`：将此字符串与另一个字符串进行比较，忽略大小写因素。
++ `boolean isEmpty()`：判断字符串是否为空。
 
 ~~~java
 package review;
@@ -180,6 +181,10 @@ public class Test {
 
 + `char[] toCharArray()`：将此字符串转换为新的字符数组。
 + `byte[] getBytes()`：使用平台的默认字符集将该字符串编码为字节序列，并将结果存储到新的字节数组中。
++ `char[] toCharArray()`：将此字符串转换为新的字符数组。
++ `String toLowerCase()`：使用默认语言环境的规则将此字符串中的所有字符转换为小写。
++ `String toUpperCase()`：使用默认语言环境的规则将此字符串中的所有字符转换为大写。
++ `Static valueOf(int i)`：返回int参数的字符串表示形式，其他类型类似。
 + `String replace(CharSequence target, CharSequence replacement)`：将此字符串中与文字目标序列匹配的每个子字符串替换为指定的文字替换序列。
 
 **代码演示**
@@ -218,6 +223,7 @@ public class Test {
 ### 分割的方法
 
 + `String[] split(String regex)`：将此字符串拆分为与给定正则表达式匹配的字符串。
++ `String trim[]`：返回值为此字符串的字符串，并删除前导和末尾的空白。
 
 **代码演示**
 

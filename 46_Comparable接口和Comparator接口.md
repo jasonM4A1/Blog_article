@@ -6,7 +6,8 @@ tags:
 	- 难点
 	- 基础知识
 categories:
-	- 难点
+	- Java
+	- 复习
 cover:
 	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201019150833.jpg
 ---
