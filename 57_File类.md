@@ -94,7 +94,7 @@ public class Test {
 
 + `boolean exists()`：判断此File对象表示的文件或目录是否实际存在。
 + `boolean isDirectory()`：判断此File对象表示的是否为目录。
-+ `boolean isFile()`：判断此File对象示的是否为文件。
++ `boolean isFile()`：判断此File对象表示的是否为文件。
 
 **代码演示**
 
@@ -132,9 +132,9 @@ public class Test {
 ### 删除的方法
 
 + `boolean createNewFile()`：如果文件不存在，则创建此文件，同时返回`true`。如果此文件存在，则不作为，同时返回`false`。
-+ `boolean delete()`：删除由此File表示的文件或目录（目录必须为空）。 创建成功，返回true。创建失败，返回false。 
 + `boolean mkdir()`：创建由此File表示的单层目录。创建成功，返回true。创建失败，返回false。 
 + `boolean mkdirs()`：创建由此File表示的多层目录。创建成功，返回true。创建失败，返回false。 
++ `boolean delete()`：删除由此File表示的文件或目录（目录必须为空）。 删除成功，返回true。删除失败，返回false。 
 
 **代码演示**
 
@@ -144,32 +144,30 @@ import java.io.IOException;
 
 public class Test {
     public static void main(String[] args) throws IOException {
-        //使用文件路径，创建一个File对象
-        File file1 = new File("b.txt");
-        //使用文件夹路径，创建一个File对象
-        File file2 = new File("man");
-        //使用文件夹路径，创建一个File对象
-        File file3 = new File("animal\\cat\\orangeCat");
+        //创建一个硬盘已经存在实体文件的File文件对象
+        File file = new File("D:\\study\\Java\\code","a.txt");
+        //创建一个硬盘上不存在实体文件的File文件对象
+        File file1 = new File("D:\\study\\Java\\code","b.txt");
+        //创建一个单层目录File对象
+        File file2 = new File("D:\\study\\Java\\code","Human");
+        //创建一个多层目录File对象
+        File file3 = new File("D:\\study\\Java\\code","Animal\\Cat\\OrangeCat");
 
-        //创建一个新的空文件
-        boolean b1 =file1.createNewFile();
-        System.out.println("文件是否创建成功：" + b1);//文件是否创建成功：true
+        //如果文件不存在，则创建此文件，同时返回true。如果此文件存在，则不作为，同时返回false。
+        System.out.println(file.createNewFile() ? "a.txt文件创建成功" : "a.txt文件创建失败");//a.txt文件创建失败
+        System.out.println(file1.createNewFile() ? "b.txt文件创建成功" : "b.txt文件创建失败");//b.txt文件创建成功
 
-        //创建由此File表示的单层目录
-        boolean b2 = file2.mkdir();
-        System.out.println("单层文件夹是否创建成功：" + b2);//单层文件夹是否创建成功：true
+        //创建由此File表示的单层目录。创建成功，返回true。创建失败，返回false。
+        System.out.println(file2.mkdir() ? "单层目录Human创建成功" : "单层Human创建失败");//单层目录Human创建成功
+        System.out.println(file3.mkdir() ? "多层目录Animal\\Cat\\OrangeCat创建成功" : "多层目录Animal\\Cat\\OrangeCat创建失败");//多层目录Animal\Cat\OrangeCat创建失败，因为mkdir()只能创建单层目录
 
-        //建由此File表示的多层目录、
-        boolean b3 = file3.mkdirs();
-        System.out.println("多层文件夹是否创建成功：" + b3);//多层文件夹是否创建成功：true
+        //创建由此File表示的多层目录。创建成功，返回true。创建失败，返回false。
+        System.out.println(file3.mkdirs() ? "多层目录Animal\\Cat\\OrangeCat成功" : "多层目录Animal\\Cat\\OrangeCat失败");//多层目录Animal\Cat\OrangeCat成功
 
-        //删除由此File表示的文件或目录。
-        boolean b4 = file1.delete();
-        System.out.println("删除文件是否成功："+ b4);//删除文件是否成功：true
-        boolean b5 = file2.delete();
-        System.out.println("删除单层文件夹是否成功："+ b5);//删除单层文件夹是否成功：true
-        boolean b6 = new File("D:\\study\\html_css_javaScipt\\untitled\\animal").delete();
-        System.out.println("删除多层文件夹是否成功："+ b6);//删除多层文件夹是否成功：false
+        //删除由此File表示的文件或目录（目录必须为空）。 创建成功，返回true。创建失败，返回false。
+        System.out.println(file1.delete() ? "b.txt文件删除成功" : "b.txt文件删除失败");//b.txt文件删除成功
+        System.out.println(file2.delete() ? "单层目录Human删除成功" : "单层Human删除失败");//单层目录Human删除成功
+        System.out.println(new File("Animal").delete() ? "多层目录Animal删除成功" : "多层目录Animal删除失败");//多层目录Animal删除失败,因为Animal目录下面不为空，还有其他目录
     }
 }
 ~~~

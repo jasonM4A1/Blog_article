@@ -39,6 +39,8 @@ cover:
 + `FileReader(File file)`： 通过给定要读取的File对象，来创建一个新的`FileReader` 。
 + `FileReader(String fileName)`：通过给定要读取的文件的String类型的名称，来创建一个新的`FileReader`。
 
+> 文件不存在，则会抛出`java.io.FileNotFoundException`异常。
+
 **代码演示**
 
 ~~~java

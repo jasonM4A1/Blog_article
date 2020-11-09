@@ -20,7 +20,7 @@ cover:
 
 `Comparable`接口需要结合Collections类的`static <T> void sort(List<T> list)`这个方法来理解。
 
-使用`Collections.sort(List<T> list)`方法对集合中的元素进行排序，被排序的类必须实现`Comparable<T>`接口，并且覆盖重写它的`int com	pareTo(T o)`方法，而`compareTo()`内部是制定排序规则的语句。
+使用`Collections.sort(List<T> list)`方法对集合中的元素进行排序，被排序的类必须实现`Comparable<T>`接口，并且覆盖重写它的`int compareTo(T o)`方法，而`compareTo()`内部是制定排序规则的语句。
 
 **代码演示**
 
@@ -29,7 +29,7 @@ cover:
 ~~~java
 import java.util.Collections;
 import java.util.ArrayList;
-
+ 	
 //自定义类实现Comparable接口
 class Person implements Comparable<Person> {
     private String name;

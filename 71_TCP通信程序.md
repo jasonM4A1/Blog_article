@@ -154,28 +154,265 @@ public class Test {
 
 ## 简单的TCP网络程序
 
+### 案例要求
+
+运用前面所学的`ServerSocket`类和`Socket`类及他们的常用方法，来实现一个`客户端`与`服务端`进行数据交互的程序。
+
 ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201030150315.jpg)
 
-### 程序实现步骤
-
-1. 【服务端】启动，创建`ServerSocket`对象，等待连接。
-2. 【客户端】启动，创建`Socket`对象，请求连接。
-3. 【服务端】调用`accept()`方法，接收连接，并返回一个`Socket`对象。
-4. 【客户端】通过调用`Socket`对象的`getOutputStream()`方法，来获取`OutputStream`，以便于向服务端写出数据。
-5. 【服务端】通过调用`Socket`对象的`getInputStream()`方法，来获取`InputStream`，以便于向客户端发送数据。
-6. 【服务端】
-
-### 程序代码实现
+### 案例实现
 
 **服务端**
 
 ~~~java
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
 
+public class ServerTCP {
+    public static void main(String[] args) throws Exception {
+        System.out.println("服务端启动，等待连接...");
+        // 1.创建ServerSocket对象，绑定端口，开始等待连接
+        ServerSocket ss = new ServerSocket(6666);
+        // 2.获取socket对象
+        Socket server = ss.accept();
+        // 3.获取InputStream对象
+        InputStream is = server.getInputStream();
+        // 4.读取客户端发送来的数据
+        byte[] bytes = new byte[1024];
+        int len = is.read(bytes);
+        // 5.打印读取到的数据
+        String mgs = new String(bytes, 0, len);
+        System.out.println(mgs);
+        // 6.获取OutputStream对象
+        OutputStream os = server.getOutputStream();
+        // 7.给客户端回写数据
+        os.write("我已经收到了您发送的数据，多些您呢~".getBytes());
+        // 8.关闭资源
+        os.close();
+        is.close();
+        server.close();
+    }
+}
+//结果：
+//服务端启动，等待连接...
+//服务器你在干什么呢？
 ~~~
 
 **客户端**
 
 ~~~java
+import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
 
+public class ClientTCP {
+    public static void main(String[] args) throws Exception {
+        System.out.println("客户端开始发送数据了....");
+        // 1.创建一个Socket对象，并绑定主机名和端口号
+        Socket client = new Socket("localhost",6666);
+        // 2.获取OutputStream对象
+        OutputStream os = client.getOutputStream();
+        // 3.向服务端发送数据
+        os.write("服务器你在干什么呢？".getBytes());
+        // 4.获取InputStream对象
+        InputStream is = client.getInputStream();
+        // 5.读取服务器回写来的数据
+        byte[] bytes = new byte[1024];
+        int len = is.read(bytes);
+        // 6.打印读取到的数据
+        String mgs = new String(bytes,0,len);
+        System.out.println(mgs);
+        // 7.关闭资源
+        is.close();
+        os.close();
+        client.close();
+    }
+}
+//结果：
+//客户端开始发送数据了....
+//我已经收到了您发送的数据，多些您呢~
+~~~
+
+## 课后练习一：文件上传
+
+### 案例要求
+
+将文件从客户端上传到服务端。
+
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201030181159.jpg)
+
+### 案例实现
+
++ 服务器端
+
+~~~java
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.*;
+
+public class FileUpload_Server {
+    public static void main(String[] args) throws Exception {
+        System.out.println("服务端启动，等待连接...");
+        // 1.创建ServerSocket对象，绑定端口号
+        ServerSocket ss = new ServerSocket(6666);
+        // 循环，确保能一直连接到客户端
+        while (true) {
+            // 2.获取Socket对象
+            Socket server = ss.accept();
+            // 采用多线程，提高效率
+            new Thread(() -> {
+                try (
+                        // 3.创建输入流，用于接收客户端发送的数据
+                        BufferedInputStream bis = new BufferedInputStream(server.getInputStream());
+                        // 4.创建输出流，用于将接收到数据写入硬盘
+                        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File("D:\\pictures\\压缩后", "top.liboshuai"+System.currentTimeMillis()+".jpg")))
+                ) {
+                    // 5.进行数据的读写
+                    int len = 0;
+                    byte[] bytes = new byte[1024];
+                    while ((len = bis.read(bytes)) != -1) {
+                        bos.write(bytes);
+                    }
+                    System.out.println("上传成功，等待下一次文件长传");
+                    // 6.创建输出流，用于给客户端回写数据
+                    OutputStream os = server.getOutputStream();
+                    os.write("服务端已经接受到文件了".getBytes());
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (server != null) {
+                            server.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+    }
+}
+~~~
+
++ 客户端
+
+~~~java
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.Socket;
+
+public class FileUpload_Client {
+    public static void main(String[] args) throws Exception {
+        System.out.println("客户端启动，开始上传文件...");
+        // 1.创建Socket对象
+        Socket client = new Socket("localhost",6666);
+        // 2.获取输入流，将本地文件写入流
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream("D:\\pictures\\压缩后\\one.jpg"));
+        // 3.获取输出流，将文件数据发给服务端
+        BufferedOutputStream bos = new BufferedOutputStream(client.getOutputStream());
+        // 4.获取输出流，接收服务端回写来的数据
+        InputStream is = client.getInputStream();
+        // 5.进行数据读写
+        int len = 0;
+        byte[] bytes = new byte[1024];
+        while ((len = bis.read(bytes)) != -1) {
+            bos.write(bytes,0,len);
+        }
+        client.shutdownOutput();
+        // 6.接收服务端回写的数据
+        byte[] back = new byte[50];
+        is.read(back);
+        System.out.println(new String(back));;
+
+        is.close();
+        client.close();
+        bis.close();
+    }
+}
+~~~
+
+## 课后练习二：模拟B\S服务器
+
+### 案例要求
+
+模拟网站服务器，使用浏览器访问自己编写的服务端程序，查看网页效果。
+
+### 案例分析
+
+1. 准备页面数据，web文件夹，复制到我们`Module`中。
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201106011931.png)
+
+2. 编写代码
+
+3. 使用浏览器访问`localhost:8888/web/index.html`。
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/20201106040517.png)
+
+### 案例实现
+
+~~~java
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.*;
+
+public class Test {
+    public static void main(String[] args) throws IOException {
+        System.out.println("服务端启动，等待连接...");
+        // 1.创建ServerSocket对象，绑定端口号
+        ServerSocket ss = new ServerSocket(8888);
+        // 2.创建多线程使浏览器可以访问所有的图片
+        while (true) {
+            Socket socket = ss.accept();
+            new Thread(new Web(socket)).start();
+        }
+    }
+    static class Web implements Runnable {
+        private Socket socket;
+
+        public Web(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                // 3.读取浏览器请求的资源路径
+                BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                // 3.1读取资源路径所在文本的第一行
+                String request = br.readLine();
+                // 3.2用空格分隔文本
+                String[] strArr = request.split(" ");
+                // 3.3去除/，得到资源路径
+                String path = strArr[1].substring(1);
+                // 4.读取资源文件到流中
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path));
+                // 5.将资源文件发送给浏览器
+                BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
+                // 6.进行文件读写
+                bos.write("HTTP/1.1 200 OK\r\n".getBytes());
+                bos.write("Content-Type:text/html\r\n".getBytes());
+                bos.write("\r\n".getBytes());
+                int len = 0;
+                byte[] bytes = new byte[1024];
+                while ((len = bis.read(bytes)) != -1) {
+                    bos.write(bytes,0,len);
+                }
+                // 7.关闭资源
+                bos.close();
+                bis.close();
+                br.close();
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
 ~~~
 

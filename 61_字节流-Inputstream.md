@@ -37,7 +37,9 @@ cover:
 ### 构造方法
 
 + `FileInputStream(File file)`：通过打开与实际文件的连接来创建一个`FileInputStream`对象，该文件由文件系统中的File对象来命名。 
-+ `FileInputStream(String name)`： 通过打开与实际文件的连接来创建一个`FileInputStream`，该文件由文件系统中的路径名命名。  
++ `FileInputStream(String name)`： 通过打开与实际文件的连接来创建一个`FileInputStream`，该文件由文件系统中的路径名命名。
+
+> 若传入的文件路径不存在，则会抛出`java.io.FileNotFoundException`异常。
 
 **代码演示**
 
