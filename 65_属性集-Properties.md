@@ -8,7 +8,6 @@ tags:
 	- 基础知识
 categories:
 	- Java
-	- 复习
 cover:
 	https://gitee.com/jasonM4A1/pictureHost/raw/master/20201023210756.jpg
 ---
