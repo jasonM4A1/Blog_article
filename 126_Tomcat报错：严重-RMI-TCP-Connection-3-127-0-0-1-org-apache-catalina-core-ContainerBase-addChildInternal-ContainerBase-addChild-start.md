@@ -14,8 +14,6 @@ cover:
 	https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210209121103.jpg
 ---
 
-w
-
 # 问题描述
 
 在启动Tomcat时，遇到下面的错误。
