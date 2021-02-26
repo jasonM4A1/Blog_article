@@ -27,7 +27,7 @@ Servlet接口默认有两个实现类，这两个实现类同时也为父子类�
 
 Servlet接口去除注释、注解等，源代码大致为：
 
-```
+```java
 package javax.servlet;
 
 import java.io.IOException;
@@ -231,6 +231,236 @@ Servlet3.0提供了注解(annotation)，使得不再需要在web.xml文件中进
 
    ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210203171301.png)
 
+# 获取请求参数
+
++ 请求的table.html页面
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>table</title>
+  </head>
+  <body>
+  <!--这里的 / 表示：http://ip:端口/ (与请求转发中的不同)-->
+  <form action="/crawler/Parameter" method="get">
+      用户名：<input type="text" name="username"><br>
+      密码： <input type="password" name="password"><br>
+      <b>爱好</b><br>
+      足球：<input type="checkbox" name="hobby" value="football"><br>
+      网球：<input type="checkbox" name="hobby" value="tennis"><br>
+      篮球：<input type="checkbox" name="hobby" value="basketball"><br>
+      <input type="submit" value="提交">
+  </form>
+  </body>
+  </html>
+  ```
+
++ Java源代码
+
+  ```java
+  package xyz.rtx3090;
+  
+  import javax.servlet.ServletException;
+  import javax.servlet.http.HttpServlet;
+  import javax.servlet.http.HttpServletRequest;
+  import javax.servlet.http.HttpServletResponse;
+  import java.io.IOException;
+  
+  public class Parameter extends HttpServlet {
+      @Override
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("我是Parameter");
+  
+          //获取table.html页面中的请求参数
+          String username = req.getParameter("username");
+          String password = req.getParameter("password");
+          String[] hobbies = req.getParameterValues("hobby");
+  
+          System.out.println("username: " + username);
+          System.out.println("password: " + password);
+          for (String hobby: hobbies
+               ) {
+              System.out.println("hobby: " + hobby);
+          }
+  
+      }
+  
+      @Override
+      protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  
+      }
+  }
+  ```
+
+# HttpServletRequest类
+
+## 概述
+
+每次只要有请求进入 Tomcat 服务器，Tomcat 服务器就会把请求过来的 HTTP 协议信息解析好封装到 Request 对象中。 然后传递到 service 方法（doGet 和 doPost）中给我们使用。我们可以通过 HttpServletRequest 对象，获取到所有请求的信息。
+
+## 常见方法
+
++ `String getMethod()`：获取请求方式
++ `String getContextPath()`：获取虚拟目录
++ `String getServletPath()`：获取Servlet路径
++ `String getQueryString()`：获取get方法请求参数
++ `String getRequestURI`：获取请求URI
++ `StringBuffer getRequestURL() `：获取请求URL
++ `String getProtocol()`：获取协议及版本
++ `String getRemoteAddr()`：获取客户机的IP地址
++ `Enumeration<String> getHeaderNames()`：获取所有请求头名称
++ `String getHeader(String name)`：通过请求头的名称获取请求头的值
++ `String getParameter(String name)`：根据参数名称获取参数值
++ `String[] getParameterValues(String name)`：根据参数名称获取参数值的数组
++ `Enumeration<String> getParameterNames()`：获取所有请求的参数名称
++ `Map<String, String[]> getParameterMap()`：获取所有参数的map集合
++ `void setAttribute(String name, Object o)`：设置域数据
++ `Object getAttribute(String name)`：获取域数据
++ `RequestDispatcher getRequestDispatcher(String path)`：获取请求转发对象
+
+## 演示
+
+### 表单项
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>table</title>
+</head>
+<body>
+<!--这里的 / 表示：http://ip:端口/ (与请求转发中的不同)-->
+<form action="/crawler/" method="get">
+    用户名：<input type="text" name="username"><br>
+    密码： <input type="password" name="password"><br>
+    <b>爱好：</b><br>
+    <input type="checkbox" name="hobby" value="football"><br>足球
+    <input type="checkbox" name="hobby" value="tennis"><br>网球
+    <input type="checkbox" name="hobby" value="basketball"><br>篮球
+    <input type="submit" value="提交">
+</form>
+</body>
+</html>
+```
+
+### Java源代码
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
+
+public class Request extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //获取请求方式
+        String method = req.getMethod();
+        System.out.println("method: " + method);
+
+        //获取虚拟目录
+        String contextPath = req.getContextPath();
+        System.out.println("contextPath" + contextPath);
+
+        //获取Servlet路径
+        String servletPath = req.getServletPath();
+        System.out.println("servletPath" + servletPath);
+
+        //获取get方法请求参数
+        String queryString = req.getQueryString();
+        System.out.println("queryString: " + queryString);
+
+        //获取请求URI
+        String requestURI = req.getRequestURI();
+        System.out.println("requestURI: " + requestURI);
+
+        //获取请求URL
+        StringBuffer requestURL = req.getRequestURL();
+        System.out.println("requestRUL: " + requestURL);
+
+        //获取协议版本
+        String protocol = req.getProtocol();
+        System.out.println("protocol: " + protocol);
+
+        //获取客户机的IP地址
+        String remoteAddr = req.getRemoteAddr();
+        System.out.println("remoteAddr: " + remoteAddr);
+
+        //获取所有请求头名称
+        Enumeration<String> headerNames = req.getHeaderNames();
+        System.out.println("headerNames: " + headerNames);
+
+        //通过请求头的名称获取请求头的值
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String header = req.getHeader(headerName);
+            System.out.println("header: " + header);
+        }
+
+        //根据参数名称获取参数值
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+
+        System.out.println("username: " + username);
+        System.out.println("password: " + password);
+
+        //根据参数名称获取参数值的数组
+        String[] hobbies = req.getParameterValues("hobby");
+        for (String hobby : hobbies
+        ) {
+            System.out.println("hobby: " + hobby);
+        }
+
+        //获取所有请求的参数名称
+        Enumeration<String> parameterNames = req.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            String element = parameterNames.nextElement();
+            System.out.println("parameterName: " + element);
+        }
+
+        //获取所有参数的map集合
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        Set<Map.Entry<String, String[]>> entries = parameterMap.entrySet();
+        for (Map.Entry<String, String[]> s : entries
+        ) {
+            System.out.println("entries: " + s);
+        }
+
+        //设置域数据
+        req.setAttribute("height", "180");
+        req.setAttribute("weight", "160");
+
+        //取出域数据
+        Object height = req.getAttribute("height");
+        Object weight = req.getAttribute("weight");
+
+        System.out.println("height: " + height);
+        System.out.println("weight: " + weight);
+
+        //获取请求转发对象
+        RequestDispatcher requestDispatcher = req.getRequestDispatcher("/FormD");
+        //进行转发
+        requestDispatcher.forward(req, resp);
+
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
 # ServletConfig类
 
 ## ServletConfig类概述
@@ -400,60 +630,409 @@ public class Servlet04 extends HttpServlet {
 }
 ```
 
-# HttpServletRequest类
+# 解决Post请求的中文乱码问题
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class doGetChinese extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //获取table.html页面中的请求参数
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+
+        //get请求不会乱码
+        System.out.println("username: " + username);;
+        System.out.println("password: " + password);;
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //设置请求字符集为UTF-8
+        req.setCharacterEncoding("UTF-8");
+
+        //获取table.html页面中的请求参数
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+
+        //如果不设置请求字符集，Post请求会乱码
+        System.out.println("username: " + username);;
+        System.out.println("password: " + password);;
+    }
+}
+```
+
+
+
+# 解决响应的中文乱码问题
+
+## 方法一
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class Chinese01 extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //首先设置服务器字符集为UTF-8
+        resp.setCharacterEncoding("UTF-8");
+
+        //在设置响应头，指定浏览器使用UTF-8解析
+        resp.setHeader("Content-Type", "text/html; charset=UTF-8");
+
+        PrintWriter writer = resp.getWriter();
+        writer.write("我会中文乱码");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
+## 方法二
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class Chinese02 extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //同时设置服务器和浏览器使用UTF-8字符集 (注意：一定要在获取流对象之前调用)
+        resp.setContentType("text/html; charset=UTF-8");
+
+        PrintWriter writer = resp.getWriter();
+        writer.write("我也不会乱码哦～");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
+# / 符号表示不同的路径名
+
++ `/`如果被服务器解析，将会被解析为`http://ip:port/工程路径/`
+  1. `<url-pattern>/servlet1</url-pattern>`
+  2. `servletContext.getRealPath("/")`
+  3. `request.getRequestDispatcher("/")`
++ `/`如果被浏览器解析，将会被解析为`http://ip:port/`
+  1. `form`表单中的`action="/"`
+  2. `response.sendRediect("/")`
+
+# 两个输出流的说明
+
+## 字节流
+
+`getOutputStream()`：常用于下载（传递二进制数据）
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class Stream extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //同时设置服务器和浏览器使用UTF-8字符集（必须首行调用）
+        resp.setContentType("text/html; charset=UTF-8");
+
+        //OutputStream
+        ServletOutputStream outputStream = resp.getOutputStream();
+        byte[] one = "Output传递二进制文件，常用于下载文件".getBytes();
+        outputStream.write(one);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
+## 字符流
+
+`getWriter()`：常用于回传字符串
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class Stream extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //同时设置服务器和浏览器使用UTF-8字符集（必须首行调用）
+        resp.setContentType("text/html; charset=UTF-8");
+
+        //Writer
+        PrintWriter writer = resp.getWriter();
+        writer.write("Writer传递字符，常用于回传字符");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
+> 两个输出流只能同时使用一个，否则会报错
+
+# base标签的作用
+
+<base> 标签为页面上的所有链接规定默认地址或默认目标。
+
+通常情况下，浏览器会从当前文档的 URL 中提取相应的元素来填写相对 URL 中的空白。
+
+使用 <base> 标签可以改变这一点。浏览器随后将不再使用当前文档的 URL，而使用指定的基本 URL 来解析所有的相对 URL。这其中包括 <a>、<img>、<link>、<form> 标签中的 URL。
+
+## 案例演示
+
++ `form.html页面`
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>one</title>
+  </head>
+  <body>
+      <b>这是form页面</b> <br>
+      <a href="a/b/c.html">跳转</a>
+      <a href="http://localhost:8080/crawler/Base">转发</a>
+  </body>
+  </html>
+  ```
+
+  
+
++ `/a/b/c.html`页面
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>two</title>
+    <!--如果不设置这个base标签，转发后在跳转就会失败-->
+      <base href="http://localhost:8080/crawler/a/b/c.html">
+  </head>
+  <body>
+  <b>这是C页面</b><br>
+  <a href="../../form.html">跳转</a>
+  </body>
+  </html>
+  ```
+
++ Java源代码
+
+  ```java
+  package xyz.rtx3090;
+  
+  import javax.servlet.ServletException;
+  import javax.servlet.http.HttpServlet;
+  import javax.servlet.http.HttpServletRequest;
+  import javax.servlet.http.HttpServletResponse;
+  import java.io.IOException;
+  
+  public class Base extends HttpServlet {
+      @Override
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("进行转发到/a/b/c.html");
+          req.getRequestDispatcher("/a/b/c.html").forward(req, resp);
+      }
+  
+      @Override
+      protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  
+      }
+  }
+  ```
+
+# 请求转发
 
 ## 概述
 
-每次只要有请求进入 Tomcat 服务器，Tomcat 服务器就会把请求过来的 HTTP 协议信息解析好封装到 Request 对象中。 然后传递到 service 方法（doGet 和 doPost）中给我们使用。我们可以通过 HttpServletRequest 对象，获取到所有请求的信息。
+请求转发是指，服务器收到请求后，从一次资源跳转到另一个资源的操作叫请求转发。
 
-## 常见方法
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210226134604.png)
 
-+ `String getMethod()`：获取请求方式
-+ `String getContextPath()`：获取虚拟目录
-+ `String getServletPath()`：获取Servlet路径
-+ `String getQueryString()`：获取get方法请求参数
-+ `String getRequestURI`：获取请求URI
-+ `StringBuffer getRequestURL() `：获取请求URL
-+ `String getProtocol()`：获取协议及版本
-+ `String getRemoteAddr()`：获取客户机的IP地址
-+ `Enumeration<String> getHeaderNames()`：获取所有请求头名称
-+ `String getHeader(String name)`：通过请求头的名称获取请求头的值
-+ `String getParameter(String name)`：根据参数名称获取参数值
-+ `String[] getParameterValues(String name)`：根据参数名称获取参数值的数组
-+ `Enumeration<String> getParameterNames()`：获取所有请求的参数名称
-+ `Map<String, String[]> getParameterMap()`：获取所有参数的map集合
-+ `void setAttribute(String name, Object o)`：设置域数据
-+ `Object getAttribute(String name)`：获取域数据
-+ `RequestDispatcher getRequestDispatcher(String path)`：获取请求转发对象
+## 特点
 
-## 演示
+1. 浏览器地址栏不会发生变化
+2. 转发前与转发后同为一次请求
+3. 他们共享Request域中的数据
+4. 可以转发到WEB-INF目录中
+5. 不能访问工程以外的资源
 
-### 表单项
+## 代码演示
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Table</title>
-</head>
-<body>
-<form action="http://localhost:8080/Servlet/Servlet01" method="POST">
-    <input type="text" name="username"/> <br/>
-    <input type="password" name="password"/> <br/>
-    <b>爱好：</b>
-    <input type="checkbox" name="hobby" value="table tennis"/>乒乓球
-    <input type="checkbox" name="hobby" value="football"/>足球
-    <input type="checkbox" name="hobby" value="basketball"/>篮球 <br/>
-    <input type="submit" id="提交"/>
-</form>
-</body>
-</html>
-```
++ Servlet程序1
 
-### Java源代码
+  ```java
+  package xyz.rtx3090;
+  
+  import javax.servlet.RequestDispatcher;
+  import javax.servlet.ServletException;
+  import javax.servlet.http.HttpServlet;
+  import javax.servlet.http.HttpServletRequest;
+  import javax.servlet.http.HttpServletResponse;
+  import java.io.IOException;
+  
+  public class Servlet01 extends HttpServlet {
+      @Override
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("准备进行请求转发！我是Servlet01");
+  
+          // 传入虚拟映射的路径，来获取转发对象（ / 表示：http://ip:端口/项目地址/）
+          RequestDispatcher requestDispatcher = req.getRequestDispatcher("/Servlet02");
+  
+          //开始请求转发
+          requestDispatcher.forward(req, resp);
+      }
+  
+      @Override
+      protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  
+      }
+  }
+  ```
+
++ Servlet程序2
+
+  ```java
+  package xyz.rtx3090;
+  
+  import javax.servlet.ServletException;
+  import javax.servlet.http.HttpServlet;
+  import javax.servlet.http.HttpServletRequest;
+  import javax.servlet.http.HttpServletResponse;
+  import java.io.IOException;
+  
+  public class Servlet02 extends HttpServlet {
+      @Override
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("请求转发成功！我是Servlet02");
+      }
+  
+      @Override
+      protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("请求转发成功！我是Servlet02");
+      }
+  }
+  ```
+
+# 重定向
+
+## 概述
+
+请求重定向，是指客户端给服务器发请求，然后服务器告诉客户端说。我给你一些地址。你去新地址访问。叫请求 重定向（因为之前的地址可能已经被废弃）
+
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210226184406.png)
+
+## 特点
+
+1. 浏览器地址栏会发生变化
+2. 重定向前和重定向后，都为一次请求，共两次
+3. 不共享Request域中数据
+4. 不能访问WEB-INF下的资源
+5. 可以访问工程外的资源
+
+## 代码实现
+
+### 方式一
 
 ```java
+package xyz.rtx3090;
 
+import javax.jws.WebService;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet(name="Redirect01", urlPatterns = "/Redirect01")
+public class Redirect01 extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //设置响应码为302
+        resp.setStatus(302);
+
+        //设置响应头Location为重定向的地址
+        resp.setHeader("Location", "http://localhost:8080/crawler/Redirect02");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
+```
+
+### 方式二
+
+```java
+package xyz.rtx3090;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet(name = "Redirect03", urlPatterns = "/Redirect03")
+public class Redirect03 extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //直接传入地址，进行重定向（这里的 / 表示：http://ip:port/）
+        resp.sendRedirect("/crawler/Redirect04");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
+}
 ```
 
