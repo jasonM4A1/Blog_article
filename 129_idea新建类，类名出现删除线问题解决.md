@@ -7,8 +7,6 @@ tags:
 	- 报错
 categories:
 	- 踩坑记录
-cover:
-	https://gitee.com/jasonM4A1/pictureHost/raw/master/img/wallhaven-w82l37-2.jpg
 ---
 
 # 问题描述
