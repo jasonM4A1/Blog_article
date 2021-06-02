@@ -495,7 +495,7 @@ public interface UserMapper {
 + 标签内的SQL语句中的占位符使用`#{名称}`来表示
 + 标签内的SQL语句末尾不需要写`;`
 + 除了查询，增加、删除、更改这三个操作都需要提交事务，才能生效！
-+ 为了规范操作，在SQL的配置文件中，我们尽量将Parameter参数和resultType都写上！
++ 为了规范操作，在SQL的配置文件中，查询需要写上Parameter参数，删除添加更改需要写上resultType参数
 + 接口所有的普通参数，尽量都写上@Param参数，尤其是多个参数时，必须写上！
 + 有时候根据业务的需求，可以考虑使用map传递参数！
 + Mapper.xml配置文件中的`<mapper><mapper/>`标签的`namespace`属性用`.`进行路径分割
@@ -605,7 +605,7 @@ public interface UserMapper {
 
 ## 第三种方式
 
-参数
+详情请看注解篇
 
 # 模糊查询
 
@@ -855,6 +855,8 @@ password=intmain()
 </configuration>
 ~~~
 
+## typeAliases标签
+
 我们可以在`mybatis-config.xml`中采用`<typeAliases>`标签来为一个包下的所有实体类配置默认别名。
 
 ~~~xml
@@ -1040,7 +1042,6 @@ mybatis可以配置多套环境，将SQL映射到多个不同的数据库上，�
 
 ### typeHandlers——类型处理器
 
-​~~~xml
     <typeHandlers>
         <typeHandler handler="org.mybatis.example.ExampleTypeHandler"/>
     </typeHandlers>
@@ -1190,7 +1191,7 @@ User{id=1, name='Jason', password='null'}
 ~~~xml
 <mapper namespace="xyz.rtx3090.dao.UserMapper">
     <!--根据id查询指定用户-->
-    <select id="selectUserById" resultType="user" parameterType="int">
+    <select id="selectUserById" resultType="user" parameterType="_int">
         select id, name, pwd as password from mybatis.user where id = #{id}
     </select>
 </mapper>
@@ -1894,7 +1895,7 @@ CREATE TABLE `teacher` (
 `id` INT(10) NOT NULL,
 `name` VARCHAR(30) DEFAULT NULL,
 PRIMARY KEY (`id`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 INSERT INTO teacher(`id`, `name`) VALUES (1, '秦老师');
 
