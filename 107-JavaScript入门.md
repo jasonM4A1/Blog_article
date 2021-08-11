@@ -441,7 +441,7 @@ JavaScript中的函数相当于Java中的方法，大致可以分为以下几种
 
 #### 格式
 
-```
+```javascript
 //创建函数格式一
 function 函数名(形参列表) {
     函数体
@@ -458,7 +458,7 @@ let 函数名 = new function(形参列表,函数体);
 
 #### 演示
 
-```
+```javascript
 //创建函数格式一
 function fun01(a, b) {
     console.log("fun01的结果为：" + (a + b));
@@ -479,9 +479,10 @@ let fun02 = function(a,b){
 
 #### 演示
 
-```
+```javascript
 //调用fun01
 fun01(10,20);//fun01的结果为：30
+
 //调用fun02
 fun02(30,40);//fun02的结果为：70
 ```
@@ -490,7 +491,7 @@ fun02(30,40);//fun02的结果为：70
 
 `length`：函数形参的个数。
 
-```
+```javascript
 let d = fun01.length;
 
 console.log("函数fun01的形参个数为：" + d);//函数fun01的形参个数为：2
@@ -509,7 +510,7 @@ console.log("函数fun01的形参个数为：" + d);//函数fun01的形参个数
 
 #### 格式
 
-```
+```javascript
 //创建数组格式一
 let 数组名 = new Array();
 
@@ -525,7 +526,7 @@ let 数组名 = [元素列表];
 
 #### 演示
 
-```
+```javascript
 //创建数组格式一
 let arr01 = new Array();
 
@@ -549,7 +550,7 @@ let arr04 = [4,5,6,7,8];
 
 #### 演示
 
-```
+```javascript
 //遍历数组
 for (let i = 0; i < arr04.length; i++) {
     console.log(arr04[i]);
@@ -560,7 +561,7 @@ for (let i = 0; i < arr04.length; i++) {
 
 `length`：数组的长度
 
-```
+```javascript
 let num = arr03.length;//获取数组arr03的长度
 ```
 
@@ -570,7 +571,7 @@ let num = arr03.length;//获取数组arr03的长度
 
 将数组中的元素按照指定的分隔符拼接为字符串
 
-```
+```java
 //将数组中的元素按照指定的分隔符拼接为字符串
 let arr05 = arr04.join("-");
 console.log(arr05);////4-5-6-7-8
@@ -580,7 +581,7 @@ console.log(arr05);////4-5-6-7-8
 
 向数组的末尾添加一个或更多元素，并返回新的长度。
 
-```
+```javascript
 //向数组的末尾添加一个或更多元素，并返回新的长度
 let length = arr04.push(9,10,11);
 console.log(length);//8
@@ -607,7 +608,7 @@ let 日期对象名 = new Date();
 
 #### 演示
 
-```
+```javascript
 let newTime = new Date();
 document.write(newTime);//Tue Dec 22 2020 22:45:04 GMT+0800 (GMT+08:00)
 ```
@@ -616,7 +617,7 @@ document.write(newTime);//Tue Dec 22 2020 22:45:04 GMT+0800 (GMT+08:00)
 
 - `toLocaleString()`：返回当前date对象对应的时间本地字符串格式
 
-  ```
+  ```javascript
   let newTime = new Date();
   let localeTime = newTime.toLocaleDateString();
   document.write(localeTime);//2020/12/22
@@ -624,7 +625,7 @@ document.write(newTime);//Tue Dec 22 2020 22:45:04 GMT+0800 (GMT+08:00)
 
 - `getTime()`：获取毫秒值。返回当前如期对象描述的时间到1970年1月1日零点的毫秒值差
 
-  ```
+  ```javascript
   let newTime = new Date();
   let MSTime = newTime.getTime();
   document.write(MSTime);//1608648497413
@@ -640,7 +641,7 @@ Javascript中的Math也不需要创建了，直接通过`Math.方法名()`的方
 
 `PI`：圆周率
 
-```
+```javascript
 let a = Math.PI;
 document.write(a);//3.141592653589793
 ```
@@ -658,7 +659,7 @@ document.write(a);//3.141592653589793
 
 #### 格式
 
-```
+```javascript
 //创建正则格式一
 let 正则对象名 = new RegExp("正则表达式");
 
@@ -668,7 +669,7 @@ let 正则对象名 = /正则表达式/;
 
 #### 演示
 
-```
+```javascript
 //创建正则格式一
 let regExp01 = new RegExp("^0\\\\d{2}.[1-9].*6$");
 document.write(regExp01);///^0\\d{2}.[1-9].*6$/
@@ -688,7 +689,7 @@ document.write(regExp02);///^0\\d{2}.[1-9].*6$//^0\\d{2}.[1-9].*6$/
 
 `test()`：传入字符串，验证是否符合正则定义的规范
 
-```
+```javascript
 let regExp01 = new RegExp("^0\\\\d{2}.[1-9].*6$");
 let result = regExp01.test("3093");
 document.write(result);//false

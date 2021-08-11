@@ -82,103 +82,138 @@ Model2把一个项目分成三部分，包括**视图、控制、模型。**
 
 # 回顾Servlet
 
-1. 新建一个Maven工程`springMVC`当做父项目，并导入pom依赖
+1. 新建一个Maven工程`springMVC`当做父项目，然后新建一个maven子项目`springMVC01-servlet`，勾选模版`maven-archetype-webapp`
+
+2. 编写`pom.xml`配置文件
 
    ~~~xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <project xmlns="http://maven.apache.org/POM/4.0.0"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-       <modelVersion>4.0.0</modelVersion>
    
-       <groupId>xyz.rtx3090</groupId>
-       <artifactId>springMVC</artifactId>
-       <version>1.0-SNAPSHOT</version>
+   <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     <modelVersion>4.0.0</modelVersion>
    
-       <dependencies>
-           <dependency>
-               <groupId>junit</groupId>
-               <artifactId>junit</artifactId>
-               <version>4.12</version>
-           </dependency>
-           <dependency>
-               <groupId>org.springframework</groupId>
-               <artifactId>spring-webmvc</artifactId>
-               <version>5.1.9.RELEASE</version>
-           </dependency>
-           <dependency>
-               <groupId>javax.servlet</groupId>
-               <artifactId>servlet-api</artifactId>
-               <version>2.5</version>
-           </dependency>
-           <dependency>
-               <groupId>javax.servlet.jsp</groupId>
-               <artifactId>jsp-api</artifactId>
-               <version>2.2</version>
-           </dependency>
-           <dependency>
-               <groupId>javax.servlet</groupId>
-               <artifactId>jstl</artifactId>
-               <version>1.2</version>
-           </dependency>
-       </dependencies>
+     <groupId>xyz.rtx3090</groupId>
+     <artifactId>SpringMVC-Review01</artifactId>
+     <version>1.0-SNAPSHOT</version>
+     <packaging>war</packaging>
+   
+     <properties>
+       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+       <maven.compiler.source>1.8</maven.compiler.source>
+       <maven.compiler.target>1.8</maven.compiler.target>
+     </properties>
+   
+     <dependencies>
+       <dependency>
+         <groupId>org.junit.jupiter</groupId>
+         <artifactId>junit-jupiter-api</artifactId>
+         <version>5.7.0</version>
+         <scope>test</scope>
+       </dependency>
+       <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-webmvc</artifactId>
+         <version>5.1.9.RELEASE</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+         <version>2.5</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet.jsp</groupId>
+         <artifactId>jsp-api</artifactId>
+         <version>2.2</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>jstl</artifactId>
+         <version>1.2</version>
+       </dependency>
+     </dependencies>
+     
    </project>
    ~~~
 
-2. 新建一个maven子项目`springMVC01-servlet`，并添加Web app框架支持
+3. 替换`SpringMVC-Review/SpringMVC-Review01/src/main/webapp/WEB-INF/web.xml`为如下内容
 
-3. 编写一个Servlet类，用来处理用户的请求
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+            version="4.0">
+   
+   
+   </web-app>
+   ```
+
+4. 在`SpringMVC-Review/SpringMVC-Review01/src/main/webapp/WEB-INF`目录下新建`jsp`目录，然后在`jsp`目录下新建`hello.jsp`文件
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/6/30
+     Time: 10:33
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>helloSpringMVC</title>
+   </head>
+   <body>
+   <%--从Java程序中取数据--%>
+   ${msg}
+   </body>
+   </html>
+   ```
+
+5. 完善项目目录结构，如图所示
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210630103957.png)
+
+6. 编写一个Servlet类`HelloSpringMVC`，用来处理用户的请求
 
    ~~~java
    package xyz.rtx3090.servlet;
-   import ......
    
-   public class HelloServlet extends HttpServlet {
+   import javax.servlet.ServletException;
+   import javax.servlet.http.HttpServlet;
+   import javax.servlet.http.HttpServletRequest;
+   import javax.servlet.http.HttpServletResponse;
+   import java.io.IOException;
    
+   public class HelloSpringMVC extends HttpServlet {
        @Override
        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-           //取得参数
+           //获取方法名
            String method = req.getParameter("method");
-           if (method.equals("add")) {
-               req.getSession().setAttribute("msg","执行了add方法 ");
+           //根据不同的方法名设置不同的属性值
+           if(method.equals("add")) {
+               req.getSession().setAttribute("msg","执行了add方法");
            } else if (method.equals("delete")) {
                req.getSession().setAttribute("msg","执行了delete方法");
+           } else {
+               req.getSession().setAttribute("msg","执行了其他未知方法");
            }
    
-           //业务逻辑
+           //业务逻辑代码（暂时我们不需要写）
+   
            //视图跳转
            req.getRequestDispatcher("WEB-INF/jsp/hello.jsp").forward(req, resp);
        }
    
        @Override
        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-           super.doPost(req, resp);
+           doGet(req,resp);
        }
    }
    ~~~
 
-4. 在WEB-INF目录下新建一个jsp的文件夹，并新建hello.jsp文件
-
-   ~~~jsp
-   <%--
-     Created by IntelliJ IDEA.
-     User: bernardo
-     Date: 2021/6/2
-     Time: 15:52
-     To change this template use File | Settings | File Templates.
-   --%>
-   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-   <html>
-   <head>
-       <title>你好啊，这个世界</title>
-   </head>
-   <body>
-   ${msg}
-   </body>
-   </html>
-   ~~~
-
-5. 在web.xml配置文件中注册我们前面写的HelloServet类
+7. 在web.xml配置文件中注册我们前面写的HelloServet类
 
    ~~~xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -186,10 +221,10 @@ Model2把一个项目分成三部分，包括**视图、控制、模型。**
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
             version="4.0">
-       
+   
        <servlet>
            <servlet-name>HelloServlet</servlet-name>
-           <servlet-class>xyz.rtx3090.servlet.HelloServlet</servlet-class>
+           <servlet-class>xyz.rtx3090.servlet.HelloSpringMVC</servlet-class>
        </servlet>
        <servlet-mapping>
            <servlet-name>HelloServlet</servlet-name>
@@ -198,7 +233,7 @@ Model2把一个项目分成三部分，包括**视图、控制、模型。**
    </web-app>
    ~~~
 
-6. 配置Tomcat，并在浏览器输入下面地址，启动测试
+8. 配置Idea中的Tomcat服务器，并在浏览器输入下面地址，启动测试
 
    +  `http://localhost:8080/tomcat配置的工程路径/helloServlet?method=add`
 
@@ -335,18 +370,14 @@ SpringMVC的原理如下图所示：
      <modelVersion>4.0.0</modelVersion>
    
      <groupId>xyz.rtx3090</groupId>
-     <artifactId>springMVC02-servlet</artifactId>
+     <artifactId>SpringMVC-Review02</artifactId>
      <version>1.0-SNAPSHOT</version>
      <packaging>war</packaging>
-   
-     <name>springMVC02-servlet Maven Webapp</name>
-     <!-- FIXME change it to the project's website -->
-     <url>http://www.example.com</url>
-   
+     
      <properties>
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-       <maven.compiler.source>1.7</maven.compiler.source>
-       <maven.compiler.target>1.7</maven.compiler.target>
+       <maven.compiler.source>1.8</maven.compiler.source>
+       <maven.compiler.target>1.8</maven.compiler.target>
      </properties>
    
      <dependencies>
@@ -356,47 +387,31 @@ SpringMVC的原理如下图所示：
          <version>4.11</version>
          <scope>test</scope>
        </dependency>
+       <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-webmvc</artifactId>
+         <version>5.1.9.RELEASE</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+         <version>2.5</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet.jsp</groupId>
+         <artifactId>jsp-api</artifactId>
+         <version>2.2</version>
+       </dependency>
+       <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>jstl</artifactId>
+         <version>1.2</version>
+       </dependency>
      </dependencies>
    
-     <build>
-       <finalName>springMVC02-servlet</finalName>
-       <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-         <plugins>
-           <plugin>
-             <artifactId>maven-clean-plugin</artifactId>
-             <version>3.1.0</version>
-           </plugin>
-           <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
-           <plugin>
-             <artifactId>maven-resources-plugin</artifactId>
-             <version>3.0.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-compiler-plugin</artifactId>
-             <version>3.8.0</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-surefire-plugin</artifactId>
-             <version>2.22.1</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-war-plugin</artifactId>
-             <version>3.2.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-install-plugin</artifactId>
-             <version>2.5.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-deploy-plugin</artifactId>
-             <version>2.8.2</version>
-           </plugin>
-         </plugins>
-       </pluginManagement>
-     </build>
    </project>
    ```
-
+   
 5. 在`main->resource`目录下创建并编写SpringMVC配置文件，文件名与下面web.xml配置的`关联springMVC文件中的classpath:`相对应`springMVC-servlet.xml`
 
    ```xml
@@ -467,7 +482,7 @@ SpringMVC的原理如下图所示：
            //封装对象
            modelAndView.addObject("msg","Hello,world");
            //封装视图
-           modelAndView.setViewName("first");
+           modelAndView.setViewName("first");//用于进行拼接，组成文件名
    
            return modelAndView;
        }
@@ -495,7 +510,9 @@ SpringMVC的原理如下图所示：
    </html>
    ```
 
-10. 配置Tomcat，在浏览器地址栏中追加输入`/first`，启动测试（注意配置tomcat选择组件时，不要选择带exploded的，不然启动不了）
+10. **一定要重新配置Tomcat**，为其新的项目重新添加一个组件页面
+
+11. 在浏览器地址栏中追加输入`/first`，启动测试（注意配置tomcat选择组件时，不要选择带exploded的，不然启动不了）
 
     ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210604105635.png)
 
@@ -523,25 +540,22 @@ SpringMVC的原理如下图所示：
      <modelVersion>4.0.0</modelVersion>
    
      <groupId>xyz.rtx3090</groupId>
-     <artifactId>springMVC02-servlet</artifactId>
+     <artifactId>SpringMVC-Review03</artifactId>
      <version>1.0-SNAPSHOT</version>
      <packaging>war</packaging>
    
-     <name>springMVC02-servlet Maven Webapp</name>
-     <!-- FIXME change it to the project's website -->
-     <url>http://www.example.com</url>
-   
      <properties>
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-       <maven.compiler.source>1.7</maven.compiler.source>
-       <maven.compiler.target>1.7</maven.compiler.target>
+       <maven.compiler.source>1.8</maven.compiler.source>
+       <maven.compiler.target>1.8</maven.compiler.target>
      </properties>
    
      <dependencies>
        <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.12</version>
+         <version>4.11</version>
+         <scope>test</scope>
        </dependency>
        <dependency>
          <groupId>org.springframework</groupId>
@@ -565,74 +579,9 @@ SpringMVC的原理如下图所示：
        </dependency>
      </dependencies>
    
-     <build>
-       <finalName>springMVC02-servlet</finalName>
-       <resources>
-         <!--解决Maven静态资源过滤问题-->
-         <resource>
-           <directory>src/main/java</directory>
-           <includes>
-             <include>**/*.properties</include>
-             <include>**/*.xml</include>
-           </includes>
-           <filtering>true</filtering>
-         </resource>
-         <resource>
-           <directory>src/main/resources</directory>
-           <includes>
-             <include>**/*.properties</include>
-             <include>**/*.xml</include>
-           </includes>
-           <filtering>true</filtering>
-         </resource>
-       </resources>
-       <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-         <plugins>
-           <plugin>
-             <artifactId>maven-clean-plugin</artifactId>
-             <version>3.1.0</version>
-           </plugin>
-           <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
-           <plugin>
-             <artifactId>maven-resources-plugin</artifactId>
-             <version>3.0.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-compiler-plugin</artifactId>
-             <version>3.8.0</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-surefire-plugin</artifactId>
-             <version>2.22.1</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-war-plugin</artifactId>
-             <version>3.2.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-install-plugin</artifactId>
-             <version>2.5.2</version>
-           </plugin>
-           <plugin>
-             <artifactId>maven-deploy-plugin</artifactId>
-             <version>2.8.2</version>
-           </plugin>
-           <!--规定项目JDK版本-->
-           <plugin>
-             <groupId>org.apache.maven.plugins</groupId>
-             <artifactId>maven-compiler-plugin</artifactId>
-             <version>3.8.0</version>
-             <configuration>
-               <source>1.8</source>
-               <target>1.8</target>
-             </configuration>
-           </plugin>
-         </plugins>
-       </pluginManagement>
-     </build>
    </project>
    ```
-
+   
 5. 创建并编写FirstController类
 
    ```java

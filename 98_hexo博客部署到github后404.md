@@ -16,3 +16,4 @@ hexo博客部署到github上后，输入域名发现404了。查看github仓库�
 
 # 解决方法
 将需要上传至github的内容放在source文件夹，例如CNAME、favicon.ico、images等。
+

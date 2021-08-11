@@ -1,3 +1,19 @@
+# JSP请求路径设置
+
+```jsp
+      <%--使用jsp脚步获取项目根目录--%>
+      <%
+          String base = request.getContextPath()+"/";
+          String url = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+base;
+      %>
+
+      <%--使用base标签规定项目根目录--%>
+      <base href="<%=url%>"/>
+
+		  <%--发起测试请求--%>
+			<a href="test/bernardo.do">测试base标签</a>
+```
+
 # Servlet相关配置文件
 
 1. servlet项目web.xml4.0版本——web.xml
@@ -126,7 +142,7 @@
 5. Log4j日志实现配置文件——log4j.properties
 
    ```properties
-   将等级为DEBUG的日志信息输出到console和file这两个目的地，console和file的定义在下面的代码
+   #将等级为DEBUG的日志信息输出到console和file这两个目的地，console和file的定义在下面的代码
    log4j.rootLogger=DEBUG,console,file
    
    #控制台输出的相关设置
@@ -152,7 +168,7 @@
    log4j.logger.java.sql.PreparedStatement=DEBUG
    ```
 
-6. mysql数据库连接文件——db.properties
+6. mysql数据库连接文件——jdbc.properties
 
    ```properties
    driver=com.mysql.jdbc.Driver
@@ -253,4 +269,3 @@
                <version>1.2</version>
            </dependency>
    ```
-
