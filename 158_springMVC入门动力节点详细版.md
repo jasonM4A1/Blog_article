@@ -1570,7 +1570,7 @@ Model 中的数据存储在 request 作用域中，SringMVC 默认采用转发�
    import java.util.List;
    
    public interface StudentService {
-       //添加学习信息
+       //添加学生信息
        int addStudent(Student student);
    
        //查询全部学生信息
@@ -1904,8 +1904,6 @@ Model 中的数据存储在 request 作用域中，SringMVC 默认采用转发�
     <html>
     <head>
         <title>添加学生</title>
-        <script src="js/jquery-3.6.0.min.js"></script>
-        <script type="text/javascript" src="js/addStudent.js"></script>
         <base href="<%=url%>"/>
     </head>
     <body>
@@ -1938,7 +1936,7 @@ Model 中的数据存储在 request 作用域中，SringMVC 默认采用转发�
     </body>
     </html>
     ```
-
+    
 19. 编写`queryAllStudent.jsp`文件，作为学生信息展示页面
 
     ```jsp
@@ -2135,5 +2133,792 @@ SpringMVC 框架把原来 Servlet 中的请求转发和重定向操作进行了�
     }
 ```
 
+## 异常处理
+
+### 概述
+
+SpringMVC框架处理异常的常用方式：使用`@ExceptionHandler`注解处理异常。
+
+使用注解`@ExceptionHandler`可以将一个方法指定为异常处理方法。该注解只有一个可选属性`value`，为一个`Class<?>`数组，用于指定该注解的方法所要处理的异常类，即所要匹配的异常。
+
+而被注解的方法，其返回值可以是`ModelAndView`、` String`或`void`，方法名随意，方法参数可以是`Exception`及其子类对象、`HttpServletRequest`、`httpsServletResponse`等。系统会自动为这些方法参数赋值。
+
+对于异常处理注解的用法，也可以直接将异常处理方法注解于`Controller`之中。
+
+不过，一般不这样使用。而是将异常处理方法专门定义在一个类中，作为全局的异常处理类。
+
+需要使用注解`@ControllerAdvice`，字面理解就是【控制器增强】，是给控制器对象增强功能的。使用`@ControllerAdvice`修饰的类中可以使用`@ExceptionHandler`。
+
+当使用`@RequestMapping`注解修饰的方法抛出异常时，会执行`@ControllerAdvice`修饰的类中异常处理方法。
+
+`@ControllerAdvice`是使用`@Component`注解修饰的，可以`<context:component-scan>`扫描到`@ControllerAdvice`所在的类路径（包名），创建对象。
+
+### 代码实现
+
+> 代码是在`整合SSM框架`的代码基础上进行修改的
+
+1. **自定义异常类**
+
+   定义三个异常类：`MyUserException`、 `NameException`、`AgeException`。其中`MyUserException`是另外两个异常的父类。
+
+   ```java
+   package xyz.rtx3090.handler;
+   
+   public class MyUserException extends Exception{
+       public MyUserException() {
+           super();
+       }
+   
+       public MyUserException(String message) {
+           super(message);
+       }
+   }
+   ```
+
+   ```java
+   package xyz.rtx3090.handler;
+   
+   public class NameException extends MyUserException{
+       public NameException() {
+           super();
+       }
+   
+       public NameException(String message) {
+           super(message);
+       }
+   }
+   ```
+
+   ```java
+   package xyz.rtx3090.handler;
+   
+   public class AgeException extends MyUserException{
+       public AgeException() {
+           super();
+       }
+   
+       public AgeException(String message) {
+           super(message);
+       }
+   }
+   ```
+
+2. 定义全局异常处理类
+
+   ```java
+   package xyz.rtx3090.controller;
+   
+   import org.springframework.web.bind.annotation.ControllerAdvice;
+   import org.springframework.web.bind.annotation.ExceptionHandler;
+   import org.springframework.web.servlet.ModelAndView;
+   import xyz.rtx3090.handler.AgeException;
+   import xyz.rtx3090.handler.NameException;
+   
+   @ControllerAdvice
+   public class GlobalExceptionResolver {
+       /**
+        * 处理NameException类型的异常
+        */
+       @ExceptionHandler(value = NameException.class)
+       public ModelAndView nameException(Exception ex) {
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject("tips","@ControllerAdvice使用注解处理NameException");
+           modelAndView.addObject("ex",ex);
+           modelAndView.setViewName("nameException");
+           return modelAndView;
+       }
+   
+       /**
+        * 处理AgeException类型的异常
+        */
+       @ExceptionHandler(value = AgeException.class)
+       public ModelAndView ageException(Exception ex) {
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject("tips","@ControllerAdvice使用注解处理AgeException");
+           modelAndView.addObject("ex",ex);
+           modelAndView.setViewName("ageException");
+           return modelAndView;
+       }
+   
+       /**
+        * 处理其他默认类型的异常
+        */
+       @ExceptionHandler
+       public ModelAndView defaultException(Exception ex){
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject("tips","@ControllerAdvice使用注解处理defaultException");
+           modelAndView.addObject("ex",ex);
+           modelAndView.setViewName("defaultException");
+           return modelAndView;
+       }
+   }
+   ```
+   
+3. 修改`Controller`抛出异常
+
+   ```java
+   package xyz.rtx3090.controller;
+   
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.stereotype.Controller;
+   import org.springframework.web.bind.annotation.RequestMapping;
+   import org.springframework.web.bind.annotation.ResponseBody;
+   import org.springframework.web.servlet.ModelAndView;
+   import xyz.rtx3090.handler.AgeException;
+   import xyz.rtx3090.handler.NameException;
+   import xyz.rtx3090.pojo.Student;
+   import xyz.rtx3090.service.StudentService;
+   
+   import java.util.List;
+   
+   @Controller
+   @RequestMapping(value = "/student")
+   public class StudentController {
+       @Autowired
+       private StudentService studentService;
+   
+       @RequestMapping(value = "/insertStudent.do")
+       public ModelAndView insertStudent(Student student) throws NameException, AgeException {
+           ModelAndView modelAndView = new ModelAndView();
+           if ("admin".equals(student.getName())){
+               //抛出NameException异常
+               throw new NameException("注册用户名不能为[admin]");
+           } else if (student.getAge() < 0 || student.getAge() > 120){
+               //抛出AgeException异常
+               throw new AgeException("注册用户年龄不合法");
+           } else {
+               int result = studentService.insertStudent(student);
+               if (result == 1) {
+                   modelAndView.addObject("msg","注册学生用户成功!");
+                   modelAndView.setViewName("success");
+               } else {
+                   modelAndView.addObject("msg","注册的学生用户失败");
+                   modelAndView.setViewName("fail");
+               }
+           }
+           return modelAndView;
+       }
+   
+       @RequestMapping(value = "/selectAllStudents.do")
+       @ResponseBody
+       public List<Student> selectAllStudents() {
+           return studentService.selectAllStudents();
+       }
+   }
+   ```
+
+4. 定义异常响应页面
+
+   `nameException.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/12
+     Time: 16:02
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+     <head>
+       <title>名字异常页面</title>
+     </head>
+     <body>
+       <h2>nameException</h2>
+       ${ex.message}
+     </body>
+   </html>
+   
+   ```
+
+   `ageException.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/12
+     Time: 16:02
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>年龄页面异常页面</title>
+   </head>
+   <body>
+       <h2>ageException</h2>
+       ${ex.message}
+   </body>
+   </html>
+   ```
+
+   `defaultException.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/12
+     Time: 16:30
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>默认异常页面</title>
+   </head>
+   <body>
+       <h2>defaultException</h2>
+       #{ex.message}
+   </body>
+   </html>
+   ```
+
+5. 修改Spring配置文件，增强`@ControllerAdvice`注解所在包名的注册组件扫描器
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xmlns:mvc="http://www.springframework.org/schema/mvc"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+   
+       <!--注册组件扫描器,指定@Controller注解所在的包-->
+       <context:component-scan base-package="xyz.rtx3090.controller"/>
+   
+       <!--注册组件扫描器，指定@ControllerAdvice注解所在的包名-->
+       <context:component-scan base-package="xyz.rtx3090.handler"/>
+   
+       <!--指定视图解析器-->
+       <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+           <property name="prefix" value="/WEB-INF/result/"/>
+           <property name="suffix" value=".jsp"/>
+       </bean>
+   
+       <!--注册注解驱动-->
+       <mvc:annotation-driven/>
+   </beans>
+   ```
 
 
+## 拦截器
+
+### 概述
+
+SpringMVC中的`Interceptor`拦截器是非常重要和相当有用，它的主要作用是拦截指定的用户请求，并进行相应的预处理和后处理。其拦截的时间点在“处理器映射器根据用户提交的请求映射出了所要执行的处理器类，并且也找到了要执行该处理器类的处理器适配器，在处理器适配器执行处理器之前”。当然，在处理器映射器映射出所要执行的处理器类时，已经将拦截器与处理器组合为了一个处理器执行链，并返回给了中央调度器。
+
+### 第一个拦截器程序
+
+1. 修改`Controller`类，在最后新增拦截器方法
+
+   ```java
+   package xyz.rtx3090.controller;
+   
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.stereotype.Controller;
+   import org.springframework.web.bind.annotation.RequestMapping;
+   import org.springframework.web.bind.annotation.ResponseBody;
+   import org.springframework.web.servlet.ModelAndView;
+   import xyz.rtx3090.handler.AgeException;
+   import xyz.rtx3090.handler.NameException;
+   import xyz.rtx3090.pojo.Student;
+   import xyz.rtx3090.service.StudentService;
+   
+   import javax.servlet.http.HttpSession;
+   import java.util.List;
+   
+   @Controller
+   @RequestMapping(value = "/student")
+   public class StudentController {
+       @Autowired
+       private StudentService studentService;
+   
+       @RequestMapping(value = "/insertStudent.do")
+       public ModelAndView insertStudent(Student student) throws NameException, AgeException {
+           ModelAndView modelAndView = new ModelAndView();
+           if ("admin".equals(student.getName())){
+               //抛出NameException异常
+               throw new NameException("注册用户名不能为[admin]");
+           } else if (student.getAge() < 0 || student.getAge() > 120){
+               //抛出AgeException异常
+               throw new AgeException("注册用户年龄不合法");
+           } else {
+               int result = studentService.insertStudent(student);
+               if (result == 1) {
+                   modelAndView.addObject("msg","注册学生用户成功!");
+                   modelAndView.setViewName("success");
+               } else {
+                   modelAndView.addObject("msg","注册的学生用户失败");
+                   modelAndView.setViewName("fail");
+               }
+           }
+           return modelAndView;
+       }
+   
+       @RequestMapping(value = "/selectAllStudents.do")
+       @ResponseBody
+       public List<Student> selectAllStudents() {
+           return studentService.selectAllStudents();
+       }
+   
+     	//拦截器代码
+       @RequestMapping(value = "/interceptor.do")
+       public ModelAndView interceptor(String name, Integer age, HttpSession session) {
+           System.out.println("执行Controller中的方法");
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject("name",name);
+           modelAndView.addObject("age",age);
+           modelAndView.setViewName("interceptorResult");
+   
+           session.setAttribute("attr","session中数据");
+   
+           return modelAndView;
+       }
+   }
+   ```
+
+2. 创建`interceptors.MyInterceptor`类，执行拦截操作
+
+   ```java
+   package xyz.rtx3090.interceptors;
+   
+   import org.springframework.web.servlet.HandlerInterceptor;
+   import org.springframework.web.servlet.ModelAndView;
+   
+   import javax.servlet.http.HttpServletRequest;
+   import javax.servlet.http.HttpServletResponse;
+   import javax.servlet.http.HttpSession;
+   
+   public class MyInterceptor implements HandlerInterceptor {
+       @Override
+       public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+           System.out.println("执行MyInterceptor类的preHandler()方法");
+           return true;
+       }
+   
+       @Override
+       public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+           System.out.println("执行MyInterceptor类的postHandle()方法");
+       }
+   
+       @Override
+       public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+           System.out.println("执行MyInterceptor类的afterCompletion()方法");
+           HttpSession session = request.getSession();
+           Object attr = session.getAttribute("attr");
+           System.out.println("attr删除之前: " + session.getAttribute("attr"));
+           session.removeAttribute("attr");
+           System.out.println("attr删除之后: " + session.getAttribute("attr"));
+       }
+   }
+   ```
+
+3. 新建`interceptor.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/13
+     Time: 19:13
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <%
+       String base = request.getContextPath()+"/";
+       String url = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+base;
+   %>
+   <html>
+   <head>
+       <title>拦截器测试页面</title>
+       <base href="<%=url%>"/>
+   </head>
+   <body>
+       <form action="student/interceptor.do" method="post">
+           姓名：<input type="text" name="name"><br>
+           年龄：<input type="text" name="age"><br>
+           <input type="submit" value="提交">
+       </form>
+   </body>
+   </html>
+   ```
+
+4. 新建`WEB-INF/result/interceptorResult.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/13
+     Time: 18:54
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>拦截器测试结果页面</title>
+   </head>
+   <body>
+   <h2>拦截器测试结果页面</h2>
+   </body>
+   </html>
+   ```
+
+5. 配置并启动tomcat服务器
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210813192443.png)
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210813192555.png)
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210813192607.png)
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210813192638.png)
+
+### 拦截器方法详解
+
+自定义拦截器，需要实现`HandlerInterceptor`接口，而该接口中含有三个方法。
+
+1. `public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)`
+
+   该方法在处理器方法执行之前执行，其返回值为`boolean`，若为`true`，则紧接着会执行处理器方法，且会将`afterCompletion()`方法放入到一个专门的方法栈中等待执行。
+
+2. `public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)`
+
+   该方法在处理器方法执行之后执行，处理器方法若最终未被执行，则该方法不会执行。由于该方法是在处理器方法执行完后执行，且该方法参数重包含`ModelAndView`，所以该方法可以修改处理器方法的处理结果数据，且可以修改跳转方向。
+
+3. `public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)`
+
+   当`preHandle()`方法返回`true`时，会将该方法放到专门的方法栈中，等到对请求进行响应所有功能完成之后才执行该方法。即该方法是在中央调度器渲染（数据填充）了响应页面之后执行的，此时对`ModelAndView`再操作也对响应无济于事。
+
+   `afterCompletion`最后执行的方法，清除资源，例如在`Controller`方法中加入数据。
+
+### 拦截器执行顺序
+
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210813195445.png)
+
+### 多个拦截器的执行
+
+在`第一个拦截器程序`的代码基础上进行修改
+
+1. 在包`interceptors`新增一个拦截器`MyInterceptor2`类
+
+   ```java
+   package xyz.rtx3090.interceptors;
+   
+   import org.springframework.web.servlet.HandlerInterceptor;
+   import org.springframework.web.servlet.ModelAndView;
+   
+   import javax.servlet.http.HttpServletRequest;
+   import javax.servlet.http.HttpServletResponse;
+   
+   public class MyInterceptor2 implements HandlerInterceptor {
+       @Override
+       public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+           System.out.println("执行MyInterceptor2类的preHandler()方法");
+           return true;
+       }
+   
+       @Override
+       public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+           System.out.println("执行MyInterceptor2类的postHandle()方法");
+       }
+   
+       @Override
+       public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+           System.out.println("执行MyInterceptor2类的afterCompletion()方法");
+       }
+   }
+   ```
+
+2. 修改`springmvc-servlet.xml`配置文件，新增一个拦截器的注册
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xmlns:mvc="http://www.springframework.org/schema/mvc"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+   
+       <!--注册组件扫描器,指定@Controller注解所在的包-->
+       <context:component-scan base-package="xyz.rtx3090.controller"/>
+   
+       <!--注册组件扫描器，指定@ControllerAdvice注解所在的包名-->
+       <context:component-scan base-package="xyz.rtx3090.handler"/>
+   
+       <!--指定视图解析器-->
+       <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+           <property name="prefix" value="/WEB-INF/result/"/>
+           <property name="suffix" value=".jsp"/>
+       </bean>
+   
+       <!--注册拦截器-->
+       <mvc:interceptors>
+           <!--声明第一个拦截器-->
+           <mvc:interceptor>
+               <!--指定所需拦截的请求路径，/**表示拦截所有请求-->
+               <mvc:mapping path="/**"/>
+               <!--声明拦截器对象-->
+               <bean class="xyz.rtx3090.interceptors.MyInterceptor"/>
+           </mvc:interceptor>
+           <!--声明第二个拦截器-->
+           <mvc:interceptor>
+               <mvc:mapping path="/**"/>
+               <bean class="xyz.rtx3090.interceptors.MyInterceptor2"/>
+           </mvc:interceptor>
+       </mvc:interceptors>
+   
+       <!--注册注解驱动-->
+       <mvc:annotation-driven/>
+   </beans>
+   ```
+
+3. 配置并启动tomcat服务器，观察控制台的执行结果
+
+   ```
+   执行MyInterceptor类的preHandler()方法
+   执行MyInterceptor2类的preHandler()方法
+   执行Controller中的方法
+   执行MyInterceptor2类的postHandle()方法
+   执行MyInterceptor类的postHandle()方法
+   执行MyInterceptor2类的afterCompletion()方法
+   执行MyInterceptor类的afterCompletion()方法
+   attr删除之前: session中数据
+   attr删除之后: null
+   ```
+
+当有多个拦截器时，形成拦截器链。拦截器链的执行顺序，与其注册顺序一致。需要再次强调一点的是，当某一个拦截器的`preHandle()`方法返回`true`并被执行到时，会向一个专门的方法栈中放入拦截器的`afterCompletion()`方法。
+
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210814012358.png)
+
+从图中可以看出，只要一个`preHandle()`方法返回`false`，则上部的执行链将被断开，其后续的处理器方法与`postHandle()`方法将无法执行。但无论执行链执行情况怎样，只要方法栈中有方法，即执行链中只要有`preHandle()`方法返回`true`，就会执行方法栈中的`afterCompletion()`方法，最终都会给响应。
+
+换一种表现方式，也可以这样理解：
+
+![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210814012638.png)
+
+### 案例——权限拦截器举例
+
+只有经过登录的用户可访问处理器，否则将返回“无权访问”提示。
+
+本例的登录，由一个JSP页面完成。即在该页面里将用户信息放入`session`中，也就是说只要访问过该页面，就说明登录了。没访问过，则为未登录用户。
+
+1. 修改`index.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/7/29
+     Time: 20:18
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <%
+       String base = request.getContextPath()+"/";
+       String url = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+base;
+   %>
+   <html>
+   <head>
+       <title>Student System</title>
+       <%--指定项目根目录--%>
+       <base href="<%=url%>"/>
+   </head>
+   <body>
+       <h2>Index page</h2>
+   </body>
+   </html>
+   ```
+
+2. 新建`login.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/15
+     Time: 16:39
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>登录页面</title>
+   </head>
+   <body>
+   <%
+       session.setAttribute("user","beijing");
+   %>
+   <h2>登录成功！</h2>
+   </body>
+   </html>
+   ```
+
+3. 新建`logout.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/15
+     Time: 16:40
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>退出登录页面</title>
+   </head>
+   <body>
+   <%
+       session.removeAttribute("user");
+   %>
+   <h2>已退出系统！</h2>
+   </body>
+   </html>
+   ```
+
+4. 新建`/WEB-INF/result/welcome.jsp`页面
+
+   ```jsp
+   <%--
+     Created by IntelliJ IDEA.
+     User: bernardo
+     Date: 2021/8/15
+     Time: 16:27
+     To change this template use File | Settings | File Templates.
+   --%>
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>welcome</title>
+   </head>
+   <body>
+   <h2>欢迎进入系统！</h2>
+   </body>
+   </html>
+   ```
+
+5. 修改`Controller`类
+
+   ```java
+   package xyz.rtx3090.controller;
+   
+   import org.springframework.stereotype.Controller;
+   import org.springframework.web.bind.annotation.RequestMapping;
+   import org.springframework.web.servlet.ModelAndView;
+   
+   @Controller
+   public class StudentController {
+   
+       @RequestMapping(value = "/system.do")
+       public ModelAndView doSome() {
+           System.out.println("欢迎进入系统");
+           return new ModelAndView("welcome");
+       }
+   }
+   ```
+
+6. 新建`PermissionInterceptor`拦截器
+
+   ```java
+   package xyz.rtx3090.interceptors;
+   
+   import org.springframework.web.servlet.HandlerInterceptor;
+   import org.springframework.web.servlet.ModelAndView;
+   
+   import javax.servlet.http.HttpServletRequest;
+   import javax.servlet.http.HttpServletResponse;
+   
+   public class PermissionInterceptor implements HandlerInterceptor {
+       @Override
+       public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+           System.out.println("执行PermissionInterceptor类的preHandle()方法");
+           String user = (String) request.getSession().getAttribute("user");
+           if (!"beijing".equals(user)) {
+               request.getRequestDispatcher("/fail.jsp").forward(request,response);
+               return false;
+           }
+           return true;
+       }
+   
+       @Override
+       public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+           System.out.println("执行MyInterceptor的postHandle()");
+       }
+   
+       @Override
+       public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+           System.out.println("执行MyInterceptor的afterCompletion()");
+       }
+   }
+   ```
+
+7. 在`springmvc`配置文件注册拦截器
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xmlns:mvc="http://www.springframework.org/schema/mvc"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+   
+       <!--注册组件扫描器,指定@Controller注解所在的包-->
+       <context:component-scan base-package="xyz.rtx3090.controller"/>
+   
+       <!--注册组件扫描器，指定@ControllerAdvice注解所在的包名-->
+       <context:component-scan base-package="xyz.rtx3090.handler"/>
+   
+       <!--指定视图解析器-->
+       <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+           <property name="prefix" value="/WEB-INF/result/"/>
+           <property name="suffix" value=".jsp"/>
+       </bean>
+   
+       <!--注册拦截器-->
+       <mvc:interceptors>
+           <mvc:interceptor>
+               <mvc:mapping path="/**"/>
+               <bean class="xyz.rtx3090.interceptors.PermissionInterceptor"/>
+           </mvc:interceptor>
+       </mvc:interceptors>
+   
+       <!--注册注解驱动-->
+       <mvc:annotation-driven/>
+   </beans>
+   ```
+
+8. 配置并启动tomcat服务器
+
+   1. 首先在浏览器地址栏输入`http://localhost:8080/SpringMVC08_Exception_war/system.do`，尝试直接进入系统，因为没用登录，结果被拦截器拦截
+
+      ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210815170711.png)
+
+   2. 然后在浏览器地址栏输入`http://localhost:8080/SpringMVC08_Exception_war/login.jsp`，进行登录操作
+
+      ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210815170834.png)
+
+   3. 再次在浏览器地址栏输入`http://localhost:8080/SpringMVC08_Exception_war/system.do`，进行第二次进入系统的操作，因为已经登录过了，所以这次没被拦截器拦截，进入系统成功
+
+      ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210815171024.png)
+
+   4. 在浏览器地址栏输入`http://localhost:8080/SpringMVC08_Exception_war/logout.jsp`，进行退出登录的操作
+
+      ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210815171118.png)
+
+   5. 在浏览器地址栏输入`http://localhost:8080/SpringMVC08_Exception_war/system.do`，在退出系统后，尝试进入系统失败，被拦截器拦截
+
+      ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210815171441.png)
