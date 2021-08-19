@@ -1063,13 +1063,15 @@ Zookeeper是一个高性能的、开源的分布式应用程序协调服务，�
 
 ### 下载
 
+> 注意我们这里要下载`3.5.6`版本的，不然可能会出现不兼容的情况
+
 ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210817173430.png)
 
 ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210817173534.png)
 
 ### 安装
 
-将下载的`apache-zookeeper-3.5.9-bin.tar.gz`文件，解压到指定目录位置即可
+将下载的`apache-zookeeper-3.5.6-bin.tar.gz`文件，解压到指定目录位置即可
 
 ```bash
 tar -zxvf apache-zookeeper-3.5.9-bin.tar.gz -C /usr/local/
@@ -1533,3 +1535,544 @@ admin.serverPort=8888
 
    ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210818171538.png)
 
+# Dubbo配置
+
+## 关闭检查
+
+dubbo缺省会在启动时检查依赖的服务是否可用，不可用时会抛出异常，阻止Spring初始化完成，以便上线时能及时发现问题，默认`check=true`。通过`check=false`关闭检查。比如测试时，有些服务不关心，或者出现了循环依赖，必须有一方先启动。
+
+1. 例一：关闭某人服务的启动时检查
+
+   ```
+   <dubbo:reference interface="xyz.rtx3090.BarService" check="false"/>
+   ```
+
+2. 例二：关闭注册中心启动时检查
+
+   ```
+   <dubbo:registry check="false"/>
+   ```
+
+   > 默认启动服务时，检查中心存在并已运行，注册中心不启动会报错
+
+## 重试次数
+
+消费者访问提供者，如果访问失败，则切换重试访问其他服务器，但重试会带来更长延迟。访问时间变长，用户的体验较差。多次重新访问服务器有可能访问成功。可通过 `retries="2"`来设置重试次数（不含第一次）
+
+1. `<dubbo:service retries="2"/>`
+2. `<dubbo:reference retries="2"/>`
+
+## 超时时间
+
+由于网络或服务端不可靠，会导致调用出现一种不确定的中间状态（超时）。为了避免超时导致客户端资源（线程）挂起耗尽，必须设置超时时间。
+
+通过设置`timeout`来调整远程服务超时时间（毫秒）
+
+1. 调整消费端服务超时时间
+
+   ```
+   <dubbo:reference interface="xyz.rtx3090.BerServicee" timeout="2000"/>
+   ```
+
+2. 调整服务端超时时间
+
+   ```
+   <dubbo:server interface="xyz.rtx3090.BarService" timeout="2000"/>
+   ```
+
+## 版本号
+
+每个接口都应定义版本号，为后续不兼容升级提供可能。当一个接口有不同的实现，项目早期使用的一个实现类，之后创建接口的新实现类。区分不同接口实现使用version，特别是项目需要把早期接口的实现全部换位新的实现类，也需要实现version。
+
+可以用版本号从早期实现过度到欣的接口实现，版本号不同的服务相互间不引用。
+
+可以按照以下的步骤进行版本迁移：
+
+1. 在低压力时间段，先升级一半提供者为新版本
+2. 再将所有消费者升级为新版本
+3. 然后将剩下的一半提供者升级为新版本
+
+## Dubbo案例改造-多版本+远程zookeeper
+
+有时候我们在升级新版本的时候同样需要兼顾旧版本，这个时候我们就需要【多版本】的方案了
+
+1. 新建普通maven java工程`009-zk-multi-interface`，最终项目目录结构如图所示：
+
+   ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819160428.png)
+
+2. 在java目录下新建包`xyz.rtx3090.model`，并在其下新建`User`实体类
+
+   ```java
+   package xyz.rtx3090.model;
+   
+   import java.io.Serializable;
+   
+   public class User implements Serializable {
+       private Integer id;
+       private String username;
+   
+       //setter and getter
+   
+       public Integer getId() {
+           return id;
+       }
+   
+       public void setId(Integer id) {
+           this.id = id;
+       }
+   
+       public String getUsername() {
+           return username;
+       }
+   
+       public void setUsername(String username) {
+           this.username = username;
+       }
+   }
+   ```
+
+3. 在java目录下新建包`xyz.rtx3090.service`，并在其下新建`UserService`类
+
+   ```java
+   package xyz.rtx3090.service;
+   
+   import xyz.rtx3090.model.User;
+   
+   public interface UserService {
+       /**
+        * 根据用户id获取用户消息
+        * @param id 用户id
+        * @return 用户对象
+        */
+       User queryUserById(Integer id);
+   }
+   ```
+
+4. 新建maven web工程，最终项目结构如图所示：
+
+   ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819160651.png)
+
+5. 修改`pom.xml`文件，添加所需依赖
+
+   ```xml
+     <dependencies>
+       <!--spring依赖-->
+       <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-context</artifactId>
+         <version>4.3.16.RELEASE</version>
+       </dependency>
+       <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-webmvc</artifactId>
+         <version>4.3.16.RELEASE</version>
+       </dependency>
+       <!--dubbo依赖-->
+       <dependency>
+         <groupId>com.alibaba</groupId>
+         <artifactId>dubbo</artifactId>
+         <version>2.6.2</version>
+       </dependency>
+   
+       <!--接口工程-->
+       <dependency>
+         <groupId>xyz.rtx3090</groupId>
+         <artifactId>009-zk-multi-interface</artifactId>
+         <version>1.0-SNAPSHOT</version>
+       </dependency>
+       <!--注册中心依赖-->
+       <dependency>
+         <groupId>org.apache.curator</groupId>
+         <artifactId>curator-framework</artifactId>
+         <version>4.1.0</version>
+       </dependency>
+   
+     </dependencies>
+   
+     <build>
+       <plugins>
+         <!--规定项目JDK版本-->
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-compiler-plugin</artifactId>
+           <version>3.8.0</version>
+           <configuration>
+             <source>1.8</source>
+             <target>1.8</target>
+           </configuration>
+         </plugin>
+       </plugins>
+     </build>
+   ```
+
+6. 在java目录下新建包`xyz.rtx3090.service.impl`包，并在其下新建`UserServiceImpl`类和`UserServiceImpl2`类
+
+   ```java
+   package xyz.rtx3090.service.impl;
+   
+   import xyz.rtx3090.model.User;
+   import xyz.rtx3090.service.UserService;
+   
+   public class UserServiceImpl implements UserService {
+       @Override
+       public User queryUserById(Integer id) {
+           User user = new User();
+           user.setId(id);
+           user.setUsername("Jason" + id);
+           return user;
+       }
+   }
+   ```
+
+   ```java
+   package xyz.rtx3090.service.impl;
+   
+   import xyz.rtx3090.model.User;
+   import xyz.rtx3090.service.UserService;
+   
+   public class UserServiceImpl2 implements UserService {
+       @Override
+       public User queryUserById(Integer id) {
+           User user = new User();
+           user.setId(id);
+           user.setUsername("Bernardo" + id);
+           return user;
+       }
+   }
+   ```
+
+7. 在resources目录下新建`dubbo-userService-multi-provider.xml`配置文件
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+          xmlns:dubbbo="http://dubbo.apache.org/schema/dubbo"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+   
+       <!--声明dubbo服务提供者名称：保证唯一性-->
+       <dubbo:application name="010-zk-userService-multi-provider"/>
+   
+       <!--声明dubbo协议和端口号-->
+       <dubbbo:protocol name="dubbo" port="20880"/>
+   
+       <!--声明注册中心-->
+       <dubbo:registry address="zookeeper://1.117.144.59:2181"/>
+   
+   
+       <!--多版本，暴露服务接口（不管是不是多版本，最好都提供版本号）-->
+       <dubbo:service interface="xyz.rtx3090.service.UserService" ref="userService1" version="1.0.0"/>
+       <dubbo:service interface="xyz.rtx3090.service.UserService" ref="userService2" version="2.0.0"/>
+   
+       <bean id="userService1" class="xyz.rtx3090.service.impl.UserServiceImpl"/>
+       <bean id="userService2" class="xyz.rtx3090.service.impl.UserServiceImpl2"/>
+   </beans>
+   ```
+
+8. 修改`web.xml`配置文件
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+            version="4.0">
+   
+       <!--注册监听器-->
+       <context-param>
+         <param-name>contextConfigLocation</param-name>
+         <param-value>classpath:dubbo-userService-multi-provider.xml</param-value>
+       </context-param>
+       <listener>
+         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+       </listener>
+   </web-app>
+   ```
+
+9. 新建maven web工程`011-zk-multi-consumer`，最终项目目录结构如图所示：
+
+   ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819161106.png)
+
+10. 修改`pom.xml`配置文件，添加项目所需依赖
+
+    ```xml
+      <dependencies>
+        <!--spring依赖-->
+        <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-context</artifactId>
+          <version>4.3.16.RELEASE</version>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-webmvc</artifactId>
+          <version>4.3.16.RELEASE</version>
+        </dependency>
+        <!--dubbo依赖-->
+        <dependency>
+          <groupId>com.alibaba</groupId>
+          <artifactId>dubbo</artifactId>
+          <version>2.6.2</version>
+        </dependency>
+    
+        <!--接口工程-->
+        <dependency>
+          <groupId>xyz.rtx3090</groupId>
+          <artifactId>009-zk-multi-interface</artifactId>
+          <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--注册中心依赖-->
+        <dependency>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-framework</artifactId>
+          <version>4.1.0</version>
+        </dependency>
+    
+      </dependencies>
+    
+      <build>
+        <plugins>
+          <!--规定项目JDK版本-->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.0</version>
+            <configuration>
+              <source>1.8</source>
+              <target>1.8</target>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    ```
+
+11. 在java目录下新建包`xyz.rtx3090.web`，并在其下新建类`UserController`
+
+    ```xml
+    package xyz.rtx3090.web;
+    
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.beans.factory.annotation.Qualifier;
+    import org.springframework.stereotype.Controller;
+    import org.springframework.ui.Model;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import xyz.rtx3090.model.User;
+    import xyz.rtx3090.service.UserService;
+    
+    @Controller
+    public class UserController {
+        @Autowired
+        @Qualifier("userServiceImpl")
+        //这里的byName自动注入是依据`dubbo-multi-consumer`配置文件中的`dubbo:reference`标签属性`id`
+        private UserService userServiceImpl;
+    
+        @Autowired
+        @Qualifier("userServiceImpl2")
+        private UserService userServiceImpl2;
+    
+        @RequestMapping(value = "/userDetail")
+        public String userDetail(Model model, Integer id) {
+            User user1 = userServiceImpl.queryUserById(id);
+            User user2 = userServiceImpl2.queryUserById(id);
+            model.addAttribute("user1",user1);
+            model.addAttribute("user2",user2);
+            return "userDetail";
+        }
+    }
+    ```
+
+12. 在resources目录下新建配置文件`dubbo-multi-consumer.xml`
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+    
+        <!--声明dubbo服务消费者名称：保证服务名称的唯一性-->
+        <dubbo:application name="011-zk-multi-consumer"/>
+    
+        <!--指定注册中心-->
+        <dubbo:registry address="zookeeper://1.117.144.59:2181"/>
+    
+        <!--引用远程接口服务-->
+        <dubbo:reference id="userServiceImpl" interface="xyz.rtx3090.service.UserService" version="1.0.0"/>
+        <dubbo:reference id="userServiceImpl2" interface="xyz.rtx3090.service.UserService" version="2.0.0"/>
+    </beans>
+    ```
+
+13. 在resources目录下新建配置文件`applicationContext.xml`
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xmlns:mvc="http://www.springframework.org/schema/mvc"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    
+        <!--组件扫描器-->
+        <context:component-scan base-package="xyz.rtx3090.web"/>
+    
+        <!--配置注解驱动-->
+        <mvc:annotation-driven/>
+    
+        <!--视图解析器-->
+        <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+            <property name="prefix" value="/"/>
+            <property name="suffix" value=".jsp"/>
+        </bean>
+    </beans>
+    ```
+
+14. 修改`web.xml`配置文件
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+             version="4.0">
+    
+        <!--注册中央调度器-->
+        <servlet>
+          <servlet-name>dispatcherServlet</servlet-name>
+          <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+          <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:dubbo-multi-consumer.xml,classpath:applicationContext.xml</param-value>
+          </init-param>
+        </servlet>
+        <servlet-mapping>
+          <servlet-name>dispatcherServlet</servlet-name>
+          <url-pattern>/</url-pattern>
+        </servlet-mapping>
+    </web-app>
+    ```
+
+15. 在webapp目录下新建`userDetail.jsp`页面
+
+    ```xml
+    <%--
+      Created by IntelliJ IDEA.
+      User: bernardo
+      Date: 2021/8/19
+      Time: 14:51
+      To change this template use File | Settings | File Templates.
+    --%>
+    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+    <html>
+    <head>
+        <title>用户信息页面</title>
+    </head>
+    <body>
+    <h2>用户一</h2>
+    <div>用户编号：${user1.id}</div>
+    <div>用户姓名：${user1.username}</div>
+    
+    <h2>用户二</h2>
+    <div>用户编号：${user2.id}</div>
+    <div>用户姓名：${user2.username}</div>
+    </body>
+    </html>
+    ```
+
+16. 启动远程主机的zookeeper
+
+17. 配置并启动项目`010-zk-userService-multi-provider`的tomcat服务器（注意修改端口号，避免两个tomcat服务器冲突）
+
+    ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819161614.png)
+
+    ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819161650.png)
+
+18. 配置比启动项目`011-zk-multi-consumer`的tomcat服务器
+
+    ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819161710.png)
+
+    ![img](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210819161725.png)
+
+19. 在浏览器地址栏中输入`http://localhost:8080/011/userDetail?id=1`，查看页面测试结果
+
+# 监控中心
+
+## 什么是监控中心
+
+dubbo的使用其实只需要有注册中心、消费者、提供者三个就可以使用了，但是并不能看到有哪些消费者和提供者。为了更好的调试、发现问题、解决问题，因此引入`dubbo-admin`，通过`dubbo-admin`可以对消费者和提供者进行管理，可以在dubbo引用部署做动态的调整、服务管理。
+
+1. dubbo-admin
+
+   图形化服务管理页面，安装时需要执行注册中心地址，即可从注册中心中获取到所有的提供这者、消费者进行配置管理
+
+2. dubbo-monitor-simple
+
+   简单的监控中心
+
+## 使用监控中心
+
+1. 进入`https://github.com/apache/dubbo-admin`下载`dubbo-admin`工程
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820045845.png)
+
+2. 使用idea打开下载的`dubbo-admin`工程
+
+3. 进入`dubbo-admin-develop/dubbo-admin-server`目录，打开`pom.xml`文件，添加`maven-antrun-plugin`的`grouid`为`org.apache.maven.plugins`，并确定其他内容没有报红
+
+   ```xml
+               <plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                   <artifactId>maven-antrun-plugin</artifactId>
+                   <version>1.8</version>
+                   <executions>
+                       <execution>
+                           <phase>verify</phase>
+                           <configuration>
+                               <tasks>
+                                   <copy file="target/dubbo-admin-server-${project.version}.jar"
+                                         tofile="../dubbo-admin-distribution/target/dubbo-admin-${project.version}.jar"/>
+                               </tasks>
+                           </configuration>
+                           <goals>
+                               <goal>run</goal>
+                           </goals>
+                       </execution>
+                   </executions>
+               </plugin>
+   ```
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820050819.png)
+
+4. 进入`dubbo-admin-develop/dubbo-admin-server/srcd/main/resources`目录，打开`application.properties`配置文件，设置一些ip和端口信息
+
+   ```properties
+   # ip地址和端口号改为自己zookeeper设置ip端口
+   admin.registry.address=zookeeper://127.0.0.1:2181
+   admin.config-center=zookeeper://127.0.0.1:2181
+   admin.metadata-report.address=zookeeper://127.0.0.1:2181
+   
+   # 后面在浏览器登录admin系统的账号密码
+   admin.root.user.name=root
+   admin.root.user.password=root
+   
+   # 新增设置端口号为7001（默认为8080，与tomcat冲突）
+   server.port=7001
+   ```
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820050503.png)
+
+5. 点击右侧的maven工具，进入`dubbo-admin(root)/Lifecyde`先点击`clean`选项，然后点击`package`选择构建Jar包
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820051014.png)
+
+6. 启动`zookeeper`和`dubbo`项目
+
+7. 等Jar包构建完成和上面启动完毕，进入`dubbo-admin-develop/dubbo-admin-distribution/target`目录，在此目录下打开终端，执行`java -jar dubbo-admin-0.3.0.jar`命令
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820051222.png)
+
+8. 在浏览器地址栏输入`http://localhost:7001`（7001是上面我自己设置的端口号），即可对dubbo项目进行监控
+
+   ![](https://gitee.com/jasonM4A1/pictureHost/raw/master/img/20210820051545.png)
+
+---
+
+# END
